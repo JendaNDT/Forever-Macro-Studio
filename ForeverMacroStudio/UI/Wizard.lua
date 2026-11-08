@@ -412,19 +412,23 @@ function studio.CreateWizard(parent, showLibrary)
     local conditionHint = W.Label(steps[3], 266, 328, 463)
     local conditionOverview = W.Label(steps[3], 266, 144, 463)
 
-    local textBox = W.Box(steps[4], 266, 126, 466, 135, true)
-    local previewLabel = W.Label(steps[4], 266, 109, 466)
-    local counts = W.Label(steps[4], 266, 266, 466)
-    local issues = W.Label(steps[4], 266, 288, 466)
+    local textBox = W.Box(steps[4], 266, 127, 466, 105, true)
+    local previewLabel = W.Label(steps[4], 266, 109, 245)
+    local previewStatus = W.Label(steps[4], 517, 109, 215)
+    previewStatus:SetJustifyH("RIGHT")
+    local counts = W.Label(steps[4], 266, 238, 466)
+    local issues = W.Label(steps[4], 266, 260, 466)
     issues:SetSpacing(2)
+    local transfer = W.Label(steps[4], 266, 392, 466)
+    transfer:SetSpacing(2)
     local function selectPreviewText()
         textBox:SetFocus()
         textBox:HighlightText()
         message = "copyHint"
         refresh()
     end
-    local copyPreview = W.Button(steps[4], 266, 409, 152, selectPreviewText)
-    local jump = W.Button(steps[4], 423, 409, 150, function(self)
+    local copyPreview = W.Button(steps[4], 266, 358, 170, selectPreviewText)
+    local jump = W.Button(steps[4], 443, 358, 138, function(self)
         local issue = self.issue
         if not issue then return end
         if editor.Get().body.mode == "raw" then
@@ -442,7 +446,7 @@ function studio.CreateWizard(parent, showLibrary)
             refresh()
         end
     end)
-    local mode = W.Button(steps[4], 579, 409, 156, function()
+    local mode = W.Button(steps[4], 588, 358, 146, function()
         local body, strings = editor.Get().body, studio.GetStrings()
         if body.mode == "raw" then
             local structured = Compiler.ToStructured(body, Catalog.SpellId, Catalog.SpellName)
@@ -493,11 +497,6 @@ function studio.CreateWizard(parent, showLibrary)
 
     local saveDescription = W.Label(steps[5], 266, 120, 465)
     local saveButton = W.Button(steps[5], 266, 235, 166, save)
-    local savePageCopy = W.Button(steps[5], 438, 235, 160, function()
-        step = 4
-        refresh()
-        selectPreviewText()
-    end)
 
     local function renderAction(strings, argument)
         categories.spell:SetText(strings.spellBook)
@@ -534,6 +533,14 @@ function studio.CreateWizard(parent, showLibrary)
         textBox.previewText = visible
         W.SetText(textBox, visible)
         previewLabel:SetText(raw and strings.rawMacro or strings.generatedMacro)
+        previewStatus:SetText(preview.canCopy and strings.previewReady or strings.previewBlocked)
+        if preview.canCopy then
+            previewStatus:SetTextColor(0.65, 0.9, 0.58)
+        else
+            previewStatus:SetTextColor(1, 0.67, 0.52)
+        end
+        transfer:SetText(strings.guide.transfer)
+        transfer:SetShown(preview.canCopy)
         counts:SetText(preview.characters and strings.previewLength:format(preview.characters, preview.characterLimit, preview.bytes)
             or strings.previewIncomplete)
         local summaries = {}
@@ -601,7 +608,7 @@ function studio.CreateWizard(parent, showLibrary)
         renderSummary(strings, raw, branch, group, branchCount, picked)
         outline:SetShown(advanced and not raw)
         groupPanel:SetShown(advanced and not raw and (step == 2 or step == 3))
-        guidePanel:SetShown(raw or not advanced)
+        guidePanel:SetShown(step ~= 5 and (raw or not advanced))
         guideTitle:SetText(step == 4 and guide.behavior or guide.howTo)
         guideText:SetText(step == 4 and describeMacro(draft.body, strings) or guide.lessons[step])
         showAdvanced:SetShown(not raw)
@@ -646,11 +653,9 @@ function studio.CreateWizard(parent, showLibrary)
                 renderPreview(strings, draft, preview)
             else
                 saveDescription:SetText(studio.library.issue and strings.storageInvalid
-                    or preview.canCopy and guide.transfer or strings.saveIncomplete)
+                    or preview.canCopy and guide.lessons[5] or strings.saveIncomplete)
                 saveButton:SetText(strings.saveDraft)
                 saveButton:SetEnabled(not studio.library.issue)
-                savePageCopy:SetText(strings.selectMacro)
-                savePageCopy:SetEnabled(preview.canCopy)
             end
         end
     end

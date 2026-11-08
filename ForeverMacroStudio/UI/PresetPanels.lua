@@ -35,8 +35,24 @@ local function createCards(panel, start, refresh)
     local indicator = W.Label(panel, 512, 404, 180)
     indicator:SetJustifyH("CENTER")
     local hint = W.Label(panel, 472, 435, 258)
+    local empty = W.Label(panel, 472, 178, 258)
+    local filter = W.Button(panel, 610, 74, 124, function()
+        page.onlyAvailable, page.index = not page.onlyAvailable, 1
+        refresh()
+    end)
 
     function page.Render(entries, guide)
+        if page.onlyAvailable then
+            local available = {}
+            for _, entry in ipairs(entries) do
+                if entry.starter then available[#available + 1] = entry end
+            end
+            entries = available
+            filter:LockHighlight()
+        else
+            filter:UnlockHighlight()
+        end
+        filter:SetText(guide.onlyAvailable)
         local pages = math.max(1, math.ceil(#entries / #cards))
         page.index = math.max(1, math.min(page.index, pages))
         local offset = (page.index - 1) * #cards
@@ -54,6 +70,13 @@ local function createCards(panel, start, refresh)
         previous:SetEnabled(page.index > 1)
         following:SetEnabled(page.index < pages)
         indicator:SetText(("%d / %d"):format(page.index, pages))
+        empty:SetText(guide.noAvailablePresets)
+        local hasEntries = #entries > 0
+        empty:SetShown(not hasEntries)
+        previous:SetShown(hasEntries)
+        following:SetShown(hasEntries)
+        indicator:SetShown(hasEntries)
+        hint:SetShown(hasEntries)
         hint:SetText(guide.presetHint)
     end
 
@@ -71,9 +94,9 @@ local function card(preset, title, description, availability, action, shiftActio
 end
 
 function studio.CreateClassPresets(panel, start)
-    local selected, renderedClass
+    local selected, renderedClass, currentIndex
     local view = {}
-    local heading = W.Label(panel, 472, 76, 260, true)
+    local heading = W.Label(panel, 472, 76, 132, true)
     local selector = W.Label(panel, 512, 111, 180)
     selector:SetJustifyH("CENTER")
     local status = W.Label(panel, 472, 143, 258)
@@ -87,18 +110,19 @@ function studio.CreateClassPresets(panel, start)
     function view.Render(guide)
         local current = playerClass()
         if not selected or renderedClass ~= current then
-            renderedClass, selected, page.index = current, 1, 1
+            renderedClass, currentIndex, page.index = current, 1, 1
             for index, class in ipairs(Presets.classes) do
-                if class == current then selected = index break end
+                if class == current then currentIndex = index break end
             end
+            selected = currentIndex
         end
-        local class = Presets.classes[selected]
+        local class = Presets.classes[page.onlyAvailable and currentIndex or selected]
         local ownClass = class == current
         heading:SetText(guide.classPresets)
         selector:SetText(guide.classNames[class])
         status:SetText(ownClass and guide.knownSpells or guide.otherClass)
-        previous:SetEnabled(selected > 1)
-        following:SetEnabled(selected < #Presets.classes)
+        previous:SetEnabled(not page.onlyAvailable and selected > 1)
+        following:SetEnabled(not page.onlyAvailable and selected < #Presets.classes)
         local entries = {}
         for _, preset in ipairs(Presets.byClass[class]) do
             local role = guide.roles[preset.role]
@@ -125,7 +149,7 @@ end
 
 function studio.CreateProfessionPresets(panel, start)
     local view = {}
-    local heading = W.Label(panel, 472, 76, 260, true)
+    local heading = W.Label(panel, 472, 76, 132, true)
     local intro = W.Label(panel, 472, 106, 258)
     local page = createCards(panel, start, function() view.Render(studio.GetStrings().guide) end)
 

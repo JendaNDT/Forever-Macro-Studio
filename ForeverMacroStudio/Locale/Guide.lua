@@ -17,6 +17,7 @@ studio.strings.enUS.guide = {
     notLearned = "Requires: %s", spellLabel = "Spell: %s", itemLabel = "Item: %s",
     shiftPair = "Press normally for %s. Hold Shift for %s.",
     presetHint = "Pick a preset to review, customize or copy it into /macro.",
+    onlyAvailable = "Available only", noAvailablePresets = "This character has no available presets here yet.",
     roles = {
         interrupt = { "Interrupt a cast", "Interrupt an enemy without switching targets." },
         control = { "Control an enemy", "Temporarily control an eligible enemy under the pointer or your selected enemy." },
@@ -66,9 +67,9 @@ studio.strings.enUS.guide = {
         enchanting = "Enchanting", engineering = "Engineering", leatherworking = "Leatherworking", tailoring = "Tailoring",
     },
     noBandage = "Put a supported bandage in your bags.", loadingBags = "Loading item data…",
-    steps = { "Choose a spell or item", "Choose who to target", "Set optional conditions", "Review the macro", "Save and use it in WoW" },
+    steps = { "Choose a spell or item", "Choose who to target", "Set optional conditions", "Review the macro", "Save the draft" },
     summaryTitle = "Draft overview",
-    summarySteps = { "Action", "Target", "Conditions", "Preview", "Save and use" },
+    summarySteps = { "Action", "Target", "Conditions", "Preview", "Save" },
     summaryRaw = "Macro text", summaryNoConditions = "None",
     summaryVariants = "%d options", summaryByVariant = "Depends on option",
     lessons = {
@@ -76,7 +77,7 @@ studio.strings.enUS.guide = {
         "Pick who should receive the spell. Self is useful for heals or defensives you want to use while targeting an enemy.",
         "Choose when the macro should work. For example, select Shift if you want it to work only while you hold that key. You can leave conditions empty.",
         "Read the preview before you put the macro on your action bar.",
-        "Your draft stays in Studio. Copy its macro text into WoW to get an action-bar button.",
+        "Save a draft to find it in the library and edit it later. To use it in WoW, follow the steps in Preview.",
     },
     howTo = "How to do this", behavior = "What the button does",
     advanced = "Advanced editing", simple = "Beginner view",
@@ -85,7 +86,7 @@ studio.strings.enUS.guide = {
     pressSimple = "Press the macro button to use %s.",
     complex = "On each line, the macro tries the first option whose conditions match.",
     unavailableAction = "Choose an available spell or item to see what the macro will do.",
-    transfer = "1. Save the draft if you want to edit it later.\n2. Select the text and copy it with Ctrl+C or Cmd+C.\n3. Open /macro, create a macro, paste the text and drag its icon to your action bar.",
+    transfer = "1. Select the macro text and copy it with Ctrl+C or Cmd+C.\n2. Open /macro in WoW, create a macro and paste the text.\n3. Drag its icon to your action bar.",
 }
 
 studio.strings.csCZ.guide = {
@@ -105,6 +106,7 @@ studio.strings.csCZ.guide = {
     notLearned = "Vyžaduje %s", spellLabel = "Kouzlo: %s", itemLabel = "Předmět: %s",
     shiftPair = "Běžný stisk použije %s. Se Shiftem použije %s.",
     presetHint = "Otevři náhled. Makro pak můžeš upravit nebo zkopírovat do /macro.",
+    onlyAvailable = "Jen dostupná", noAvailablePresets = "Pro tuto postavu tu zatím žádné dostupné přednastavení není.",
     roles = {
         interrupt = { "Přerušit kouzlení", "Přeruš kouzlení nepřítele bez přepínání cíle." },
         control = { "Omezit nepřítele", "Dočasně vyřaď vhodného nepřítele pod kurzorem nebo vybraný cíl." },
@@ -154,9 +156,9 @@ studio.strings.csCZ.guide = {
         enchanting = "očarování", engineering = "inženýrství", leatherworking = "kožedělnictví", tailoring = "krejčovství",
     },
     noBandage = "Přidej si do batohu vhodný obvaz.", loadingBags = "Načítají se data předmětů…",
-    steps = { "Vyber kouzlo nebo předmět", "Vyber, na koho makro míří", "Přidej podmínku, pokud chceš", "Zkontroluj náhled", "Ulož a přenes do hry" },
+    steps = { "Vyber kouzlo nebo předmět", "Vyber, na koho makro míří", "Přidej podmínku, pokud chceš", "Zkontroluj náhled", "Ulož návrh" },
     summaryTitle = "Přehled návrhu",
-    summarySteps = { "Akce", "Cíl", "Podmínky", "Náhled", "Uložení a použití" },
+    summarySteps = { "Akce", "Cíl", "Podmínky", "Náhled", "Uložení" },
     summaryRaw = "Text makra", summaryNoConditions = "Žádné",
     summaryVariants = "%d možnosti", summaryByVariant = "Podle varianty",
     lessons = {
@@ -164,7 +166,7 @@ studio.strings.csCZ.guide = {
         "Vyber, na koho kouzlo míří. Volba Sebe se hodí pro léčení nebo obranu, i když máš vybraného nepřítele.",
         "Podmínky jsou nepovinné. Třeba volba Shift spustí kouzlo jen tehdy, když při stisku tlačítka držíš Shift.",
         "Před přenosem na lištu zkontroluj náhled.",
-        "Návrh zůstane ve Studiu. Tlačítko na herní liště získáš vložením jeho textu do /macro.",
+        "Uložený návrh později najdeš v knihovně a můžeš ho dál upravovat. Postup přenosu do hry je v náhledu.",
     },
     howTo = "Jak na to", behavior = "Co tlačítko udělá",
     advanced = "Pokročilé úpravy", simple = "Pohled pro začátečníka",
@@ -173,5 +175,5 @@ studio.strings.csCZ.guide = {
     pressSimple = "Při stisku použije %s.",
     complex = "Na každém řádku makro použije první možnost, jejíž podmínky platí.",
     unavailableAction = "Vyber dostupné kouzlo nebo předmět a tady uvidíš, co makro udělá.",
-    transfer = "1. Ulož návrh, pokud se k němu chceš vrátit.\n2. Označ text a zkopíruj ho přes Cmd+C nebo Ctrl+C.\n3. Otevři /macro, vytvoř makro, vlož text a přetáhni ikonu na lištu.",
+    transfer = "1. Označ text makra a zkopíruj ho přes Cmd+C nebo Ctrl+C.\n2. Ve hře otevři /macro, vytvoř makro a vlož text.\n3. Přetáhni ikonu makra na lištu.",
 }
