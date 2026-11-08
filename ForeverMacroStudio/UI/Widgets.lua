@@ -75,16 +75,24 @@ function Widgets.Lower(text)
     return (text:lower():gsub("[\194-\223][\128-\191]", accented))
 end
 
-function Widgets.Pager(parent, x, y, width, rowCount, refresh, choose)
+function Widgets.Pager(parent, x, y, width, rowCount, refresh, choose, sideAction)
     local pager = { page = 1 }
-    local rows = {}
+    local rows, actions = {}, {}
+    local rowWidth = sideAction and width - sideAction.width - 5 or width
     for index = 1, rowCount do
-        rows[index] = Widgets.Button(parent, x, y + (index - 1) * 27, width, function(self)
+        local rowY = y + (index - 1) * 27
+        local row = Widgets.Button(parent, x, rowY, rowWidth, function(self)
             if self.entry then choose(self.entry) end
         end)
-        local label = rows[index]:GetFontString()
+        rows[index] = row
+        local label = row:GetFontString()
         label:SetWordWrap(false)
         label:SetMaxLines(1)
+        if sideAction then
+            actions[index] = Widgets.Button(parent, x + rowWidth + 5, rowY, sideAction.width, function()
+                if row.entry then sideAction.choose(row.entry) end
+            end)
+        end
     end
     local navY = y + rowCount * 27 + 2
     local previous = Widgets.Button(parent, x, navY, 36, function()
@@ -100,7 +108,7 @@ function Widgets.Pager(parent, x, y, width, rowCount, refresh, choose)
     local indicator = Widgets.Label(parent, x + 46, navY + 4, width - 92)
     indicator:SetJustifyH("CENTER")
 
-    function pager.Render(entries, label, selected)
+    function pager.Render(entries, label, selected, actionLabel, actionEnabled)
         local pages = math.max(1, math.ceil(#entries / rowCount))
         pager.page = math.max(1, math.min(pager.page, pages))
         local offset = (pager.page - 1) * rowCount
@@ -110,6 +118,11 @@ function Widgets.Pager(parent, x, y, width, rowCount, refresh, choose)
             row:SetShown(entry ~= nil)
             if entry then row:SetText(Widgets.SafeText(label(entry))) end
             if entry and selected and selected(entry) then row:LockHighlight() else row:UnlockHighlight() end
+            if actions[index] then
+                actions[index]:SetShown(entry ~= nil)
+                actions[index]:SetText(actionLabel)
+                actions[index]:SetEnabled(actionEnabled)
+            end
         end
         previous:SetEnabled(pager.page > 1)
         nextPage:SetEnabled(pager.page < pages)

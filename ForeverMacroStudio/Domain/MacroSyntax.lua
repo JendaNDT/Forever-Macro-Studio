@@ -12,9 +12,9 @@ local predicates = {
 local defaultGroup = { predicates = {} }
 local defaultGroups = { defaultGroup }
 
-function Syntax.AddDiagnostic(diagnostics, severity, code, line, branch, group)
+function Syntax.AddDiagnostic(diagnostics, severity, code, line, branch, group, reason)
     diagnostics[#diagnostics + 1] = {
-        severity = severity, code = code, line = line, branch = branch, group = group,
+        severity = severity, code = code, line = line, branch = branch, group = group, reason = reason,
     }
 end
 
@@ -116,9 +116,11 @@ end
 
 function Syntax.AnalyzeBranches(branches, diagnostics, line)
     local earlier = {}
+    local defaultSeen = false
     for branchIndex, branch in ipairs(branches) do
         local groups = branch.groups
         local current, canMatch, reached = {}, false, false
+        local hasDefault, needsShift = false, true
         local hasGroups = #groups > 0
         for groupIndex, group in ipairs(hasGroups and groups or defaultGroups) do
             local rule = asRule(group)
@@ -126,6 +128,8 @@ function Syntax.AnalyzeBranches(branches, diagnostics, line)
                 Syntax.AddDiagnostic(diagnostics, "warning", "contradictory-group", line, branchIndex, groupIndex)
             else
                 canMatch = true
+                hasDefault = hasDefault or (not group.unit and next(rule.required) == nil)
+                needsShift = needsShift and rule.required["mod:shift"] == true
                 local covered = false
                 for _, previous in ipairs(earlier) do
                     if covers(previous, rule) then covered = true break end
@@ -146,8 +150,10 @@ function Syntax.AnalyzeBranches(branches, diagnostics, line)
             end
         end
         if canMatch and not reached then
-            Syntax.AddDiagnostic(diagnostics, "warning", "unreachable-branch", line, branchIndex)
+            local reason = defaultSeen and (needsShift and "shift-after-default" or "after-default") or nil
+            Syntax.AddDiagnostic(diagnostics, "warning", "unreachable-branch", line, branchIndex, nil, reason)
         end
+        defaultSeen = defaultSeen or hasDefault
         for _, rule in ipairs(current) do earlier[#earlier + 1] = rule end
     end
 end

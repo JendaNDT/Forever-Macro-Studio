@@ -44,7 +44,7 @@ function methods:ClearFocus()
         if self.OnEditFocusLost then self:OnEditFocusLost() end
     end
 end
-function methods:HighlightText() self.highlightedText = self.text end
+function methods:HighlightText(first, last) self.highlightedText = self.text:sub((first or 0) + 1, last) end
 function methods:SetScrollChild(child) self.child = child end
 for _, name in ipairs({
     "SetAllPoints", "SetFrameStrata", "SetScale", "SetJustifyH", "SetSpacing", "SetWordWrap",
@@ -133,7 +133,7 @@ function time() return 100 end
 function CreateMacro() error("Wizard must not create WoW macros") end
 function EditMacro() error("Wizard must not edit WoW macros") end
 function DeleteMacro() error("Wizard must not delete WoW macros") end
-C_AddOns = { GetAddOnMetadata = function() return "0.4.4" end }
+C_AddOns = { GetAddOnMetadata = function() return "0.4.5" end }
 Enum = { SpellBookSpellBank = { Player = 0 } }
 local bookSpells = {
     { spellID = 35, name = "Léčení" },
@@ -343,6 +343,35 @@ assert(rawBox():GetText() == "#showtooltip\n/cast [@mouseover,help,nodead][@targ
 click("Draft library")
 respond("OnAlt")
 
+click("Paste macro text")
+local shadowedShift = "#showtooltip\n/cast [] Léčení; [mod:shift] Strikes"
+enter(rawBox(), shadowedShift .. "\n/use 20")
+assert(label("Issue 1 of 2"))
+assert(visible("FontString", function(frame)
+    return (frame.text or ""):find("Move the Shift action above it.", 1, true)
+end))
+clickAt(">", 300, 260)
+assert(label("Issue 2 of 2"))
+local showLine = button("Show line")
+showLine:OnClick()
+assert(rawBox().highlightedText == "/use 20")
+clickAt("<", 266, 260)
+showLine:OnClick()
+assert(rawBox().highlightedText == "/cast [] Léčení; [mod:shift] Strikes")
+enter(rawBox(), shadowedShift)
+click("Visual editor")
+assert(label("Issue 1 of 1"))
+local showRule = button("Show rule")
+showRule:OnClick()
+assert(button("1  Action · Strikes").highlight)
+assert(label("Branch 2/2"))
+clickAt("↑", 156, 326)
+click("4  Preview")
+assert(rawBox():GetText() == "#showtooltip\n/cast [mod:shift] Strikes; [] Léčení")
+assert(not label("Issue 1 of 1"))
+click("Draft library")
+respond("OnAlt")
+
 assert(#studio.Presets.classes == 9)
 for _, class in ipairs(studio.Presets.classes) do
     assert(#studio.Presets.byClass[class] == 5)
@@ -353,7 +382,7 @@ for _, class in ipairs(studio.Presets.classes) do
         local name = studio.MacroText.Trim((preset.names:match("^[^/]+")))
         local id = preset.spellIds[1]
         local shiftId = preset.shiftSpellIds and preset.shiftSpellIds[1]
-        local shiftName = shiftId and studio.MacroText.Trim((preset.names:match("/(.+)$")))
+        local shiftName = preset.shiftName
         local draft = studio.Editor.Open(nil, false, "enUS", {
             pattern = preset.pattern, action = { kind = "spell", name = name, id = id },
             shiftAction = shiftId and { kind = "spell", name = shiftName, id = shiftId },
@@ -404,6 +433,18 @@ events:OnEvent("PLAYER_ENTERING_WORLD")
 clickAt(">", 700, 399)
 clickAt(">", 700, 399)
 assert(not button("Charge or intercept").enabled)
+local function cardSays(text)
+    return visible("FontString", function(frame) return (frame.text or ""):find(text, 1, true) end)
+end
+assert(cardSays("You know Charge. Learn Intercept for the Shift action."))
+bookSpells = { { spellID = 20252, name = "Intercept" } }
+events:OnEvent("SPELLS_CHANGED")
+assert(cardSays("You know Intercept for Shift. Learn Charge for a normal press."))
+bookSpells = {}
+events:OnEvent("SPELLS_CHANGED")
+assert(cardSays("Learn Charge for a normal press and Intercept for Shift."))
+bookSpells = { { spellID = 100, name = "Charge" } }
+events:OnEvent("SPELLS_CHANGED")
 click("Available only")
 assert(label(studio.strings.enUS.guide.noAvailablePresets))
 bookSpells[2] = { spellID = 20252, name = "Intercept" }
@@ -459,4 +500,21 @@ click("Knihovna návrhů")
 assert(popup.text == "Uložit změny návrhu?" and popup.button2 == "Pokračovat v úpravách")
 respond("OnAlt")
 
-print("E04: wizard navigation, macro transfer, preset filters, round trip, and popup typography passed")
+clickAt("Upravit kopii", 330, 137)
+assert(editAt(174, 43):GetText() == "Kopie – Sebeobnova")
+assert(studio.library.Count() == 3)
+click("Knihovna návrhů")
+respond("OnAlt")
+assert(studio.library.Count() == 3)
+clickAt("Upravit kopii", 330, 137)
+click("2  Cíl · Sebe")
+click("Aktuální cíl")
+click("5  Uložení")
+click("Uložit návrh")
+local original = assert(studio.library.Get("draft-1"))
+local copied = assert(studio.library.Get("draft-4"))
+assert(original.revision == 3 and original.body.lines[2].branches[1].groups[1].unit == "player")
+assert(copied.title == "Kopie – Sebeobnova" and copied.revision == 1)
+assert(copied.body.lines[2].branches[1].groups[1].unit == "target")
+
+print("E04: wizard diagnostics, draft copying, preset availability, transfer, and popup typography passed")

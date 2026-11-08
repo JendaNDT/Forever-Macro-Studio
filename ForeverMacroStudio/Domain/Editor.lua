@@ -53,7 +53,10 @@ function Editor.Open(draft, raw, locale, starter)
     local history = { draft and copy(draft) or newDraft(raw, locale, starter) }
     local index, saved = 1, history[1]
     local id, revision
-    if draft then id, revision = draft.id, draft.revision end
+    if draft then
+        id, revision = draft.id, draft.revision
+        if not id then saved = nil end
+    end
     local mergeKey
     local editor = {}
 

@@ -12,6 +12,8 @@ Záložka **Profese** nabízí 12 přednastavení pro otevření výrobních oke
 
 **Vložit text** otevře textový režim. **Vizuální editor** převede text, když kompilátor dokáže zachovat stejné příkazy, cíle, podmínky a argumenty. Návrh s chybou můžeš uložit k pozdějšímu zpracování. Pokud uložená knihovna vyžaduje obnovu, `/fms rescue` otevře čitelné návrhy ke zkopírování.
 
+V náhledu můžeš procházet zjištění pomocí šipek. **Ukázat pravidlo** otevře příslušnou větev nebo podmínku. V textovém režimu **Ukázat řádek** označí související řádek. Tlačítkem **Upravit kopii** v knihovně otevřeš samostatný návrh, který se přidá do knihovny po uložení. U nedostupných třídních dvojic karta ukáže, které kouzlo chybí pro běžný stisk nebo pro Shift.
+
 Příkaz `/fms debug compiler` vypíše ukázku generování i délku výsledku. Kompilátor počítá znaky UTF-8 a bajty po sjednocení konců řádků na LF. Pro ruční přenos používá limit 255 znaků z vestavěného editoru. Statická kontrola pracuje s počáteční sadou jednotek `player`, `target` a `mouseover` a podmínkami `help`, `harm`, `exists`, `nodead` a `mod:shift/ctrl/alt`. Ověření chování maker ve hře je popsané v E00.
 
 Pro zkoušky klienta nainstaluj do stejné složky `ForeverMacroStudioProbe`. Příkaz `/fms probe` zobrazí dostupná API a obsazenost slotů. Funguje i `/fmsprobe`. Zápisové zkoušky mají samostatné příkazy a pracují s testovacími makry `FMSE00…`.

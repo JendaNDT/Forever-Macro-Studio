@@ -93,6 +93,24 @@ local function card(preset, title, description, availability, action, shiftActio
     }
 end
 
+local function classAvailability(preset, ownClass, guide)
+    local name, shiftName = preset.names, preset.shiftName
+    if not ownClass then return shiftName and guide.shiftPair:format(name, shiftName) or name end
+
+    local action = Catalog.KnownSpell(preset.spellIds)
+    if not shiftName then
+        if action then return guide.spellLabel:format(action.name), action end
+        local requirement = #preset.spellIds > 1 and guide.oneSpellRequired or guide.notLearned
+        return requirement:format(name)
+    end
+
+    local alternate = Catalog.KnownSpell(preset.shiftSpellIds)
+    if action and alternate then return guide.shiftPair:format(action.name, alternate.name), action, alternate end
+    if action then return guide.missingShift:format(action.name, shiftName) end
+    if alternate then return guide.missingDefault:format(alternate.name, name) end
+    return guide.missingBoth:format(name, shiftName)
+end
+
 function studio.CreateClassPresets(panel, start)
     local selected, renderedClass, currentIndex
     local view = {}
@@ -126,20 +144,7 @@ function studio.CreateClassPresets(panel, start)
         local entries = {}
         for _, preset in ipairs(Presets.byClass[class]) do
             local role = guide.roles[preset.role]
-            local spell, alternate
-            local availability = preset.names
-            if ownClass then
-                spell = Catalog.KnownSpell(preset.spellIds)
-                if preset.shiftSpellIds then
-                    alternate = Catalog.KnownSpell(preset.shiftSpellIds)
-                    if not alternate then spell = nil end
-                end
-                if spell and alternate then
-                    availability = guide.shiftPair:format(spell.name, alternate.name)
-                else
-                    availability = spell and guide.spellLabel:format(spell.name) or guide.notLearned:format(preset.names)
-                end
-            end
+            local availability, spell, alternate = classAvailability(preset, ownClass, guide)
             entries[#entries + 1] = card(preset, role[1], role[2], availability, spell, alternate)
         end
         page.Render(entries, guide)

@@ -80,7 +80,16 @@ local function createWindow()
         preferences.language = nextLanguage[preferences.language or "auto"] or "auto"
         render()
     end)
-    local pager = W.Pager(libraryPanel, 24, 137, 420, 8, function() render() end, function(draft) start(draft) end)
+    local pager = W.Pager(libraryPanel, 24, 137, 420, 8, function() render() end, function(draft) start(draft) end, {
+        width = 114,
+        choose = function(draft)
+            if studio.library.issue then return end
+            local strings = studio.GetStrings()
+            local copy = studio.Draft.CopyContent(draft)
+            copy.title = strings.copyTitle:format(copy.title ~= "" and copy.title or strings.untitledDraft)
+            start(copy)
+        end,
+    })
     search:SetScript("OnTextChanged", function(_, user)
         if user then pager.page = 1; render() end
     end)
@@ -127,7 +136,8 @@ local function createWindow()
             end
         end
         language:SetText(strings.language:format(studio.GetLanguageLabel(strings)))
-        pager.Render(entries, function(draft) return draft.title ~= "" and draft.title or strings.untitledDraft end)
+        pager.Render(entries, function(draft) return draft.title ~= "" and draft.title or strings.untitledDraft end,
+            nil, strings.editCopy, not studio.library.issue)
     end
 
     function window:Refresh()

@@ -7,7 +7,7 @@ studio.Presets = {
             { role = "interrupt", pattern = "hostile", spellIds = { 6552, 72 }, names = "Pummel / Shield Bash" },
             { role = "disarm", pattern = "hostile", spellIds = { 676 }, names = "Disarm" },
             { role = "defensive", pattern = "shift", spellIds = { 871 }, names = "Shield Wall" },
-            { role = "chargePair", spellIds = { 100 }, shiftSpellIds = { 20252 }, names = "Charge / Intercept" },
+            { role = "chargePair", spellIds = { 100 }, shiftSpellIds = { 20252 }, names = "Charge", shiftName = "Intercept" },
         },
         PALADIN = {
             { role = "heal", pattern = "mouseover", spellIds = { 19750, 635 }, names = "Flash of Light / Holy Light" },
@@ -28,7 +28,7 @@ studio.Presets = {
             { role = "control", pattern = "hostile", spellIds = { 2094 }, names = "Blind" },
             { role = "sap", pattern = "hostile", spellIds = { 6770 }, names = "Sap" },
             { role = "vanish", pattern = "shift", spellIds = { 1856 }, names = "Vanish" },
-            { role = "sprintPair", spellIds = { 2983 }, shiftSpellIds = { 5277 }, names = "Sprint / Evasion" },
+            { role = "sprintPair", spellIds = { 2983 }, shiftSpellIds = { 5277 }, names = "Sprint", shiftName = "Evasion" },
         },
         PRIEST = {
             { role = "shield", pattern = "mouseover", spellIds = { 17 }, names = "Power Word: Shield" },
@@ -49,7 +49,7 @@ studio.Presets = {
             { role = "control", pattern = "hostile", spellIds = { 118 }, names = "Polymorph" },
             { role = "removeCurse", pattern = "mouseover", spellIds = { 475 }, names = "Remove Lesser Curse" },
             { role = "slowFall", pattern = "self", spellIds = { 130 }, names = "Slow Fall" },
-            { role = "blinkPair", spellIds = { 1953 }, shiftSpellIds = { 11958 }, names = "Blink / Ice Block" },
+            { role = "blinkPair", spellIds = { 1953 }, shiftSpellIds = { 11958 }, names = "Blink", shiftName = "Ice Block" },
         },
         WARLOCK = {
             { role = "control", pattern = "hostile", spellIds = { 5782 }, names = "Fear" },

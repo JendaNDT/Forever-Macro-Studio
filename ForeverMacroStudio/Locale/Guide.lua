@@ -15,7 +15,11 @@ studio.strings.enUS.guide = {
     },
     knownSpells = "Presets use spells your character knows.", otherClass = "Preview for another class. Log in on that class to use its presets.",
     notLearned = "Requires: %s", spellLabel = "Spell: %s", itemLabel = "Item: %s",
+    oneSpellRequired = "Learn one of these spells (%s).",
     shiftPair = "Press normally for %s. Hold Shift for %s.",
+    missingShift = "You know %s. Learn %s for the Shift action.",
+    missingDefault = "You know %s for Shift. Learn %s for a normal press.",
+    missingBoth = "Learn %s for a normal press and %s for Shift.",
     presetHint = "Pick a preset to review, customize or copy it into /macro.",
     onlyAvailable = "Available only", noAvailablePresets = "This character has no available presets here yet.",
     roles = {
@@ -104,7 +108,11 @@ studio.strings.csCZ.guide = {
     },
     knownSpells = "Studio vybírá z kouzel, která postava zná.", otherClass = "Ukázka pro jinou třídu. Použiješ ji na postavě této třídy.",
     notLearned = "Vyžaduje %s", spellLabel = "Kouzlo: %s", itemLabel = "Předmět: %s",
+    oneSpellRequired = "Stačí znát jedno z kouzel (%s).",
     shiftPair = "Běžný stisk použije %s. Se Shiftem použije %s.",
+    missingShift = "%s už znáš. Pro variantu se Shiftem chybí %s.",
+    missingDefault = "%s už znáš. Pro běžný stisk chybí %s.",
+    missingBoth = "Chybí %s pro běžný stisk a %s pro Shift.",
     presetHint = "Otevři náhled. Makro pak můžeš upravit nebo zkopírovat do /macro.",
     onlyAvailable = "Jen dostupná", noAvailablePresets = "Pro tuto postavu tu zatím žádné dostupné přednastavení není.",
     roles = {

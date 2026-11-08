@@ -130,6 +130,7 @@ function studio.CreateWizard(parent, showLibrary)
 
     local view, editor, refresh = {}
     local step, selectedLine, selectedBranch, selectedGroup, category, message, advanced
+    local issueIndex, issueBody = 1
     local pendingClose
     local steps = {}
     for index = 1, 5 do
@@ -180,7 +181,7 @@ function studio.CreateWizard(parent, showLibrary)
     end
 
     local function finishClose(action)
-        editor, pendingClose = nil, nil
+        editor, pendingClose, issueBody = nil, nil, nil
         frame:Hide()
         action()
     end
@@ -417,8 +418,19 @@ function studio.CreateWizard(parent, showLibrary)
     local previewStatus = W.Label(steps[4], 517, 109, 215)
     previewStatus:SetJustifyH("RIGHT")
     local counts = W.Label(steps[4], 266, 238, 466)
-    local issues = W.Label(steps[4], 266, 260, 466)
+    local issueCount = W.Label(steps[4], 337, 264, 395)
+    local issues = W.Label(steps[4], 266, 291, 466)
     issues:SetSpacing(2)
+    local previousIssue = W.Button(steps[4], 266, 260, 30, function()
+        issueIndex = issueIndex - 1
+        refresh()
+    end)
+    local nextIssue = W.Button(steps[4], 300, 260, 30, function()
+        issueIndex = issueIndex + 1
+        refresh()
+    end)
+    previousIssue:SetText("<")
+    nextIssue:SetText(">")
     local transfer = W.Label(steps[4], 266, 392, 466)
     transfer:SetSpacing(2)
     local function selectPreviewText()
@@ -432,18 +444,20 @@ function studio.CreateWizard(parent, showLibrary)
         local issue = self.issue
         if not issue then return end
         if editor.Get().body.mode == "raw" then
-            local text, cursor = textBox:GetText(), 1
+            local text, first = textBox:GetText(), 1
             for _ = 2, issue.line do
-                local finish = text:find("\n", cursor, true)
+                local finish = text:find("\n", first, true)
                 if not finish then break end
-                cursor = finish + 1
+                first = finish + 1
             end
+            local finish = text:find("\n", first, true) or #text + 1
             textBox:SetFocus()
-            textBox:SetCursorPosition(cursor - 1)
+            textBox:SetCursorPosition(first - 1)
+            textBox:HighlightText(first - 1, finish - 1)
         else
             selectedLine, selectedBranch, selectedGroup = issue.line, issue.branch or 1, issue.group or 1
-            step = issue.code == "unsupported-unit" and 2 or issue.group and 3 or 1
-            refresh()
+            advanced = true
+            goTo(issue.code == "unsupported-unit" and 2 or issue.group and 3 or 1)
         end
     end)
     local mode = W.Button(steps[4], 588, 358, 146, function()
@@ -543,23 +557,35 @@ function studio.CreateWizard(parent, showLibrary)
         transfer:SetShown(preview.canCopy)
         counts:SetText(preview.characters and strings.previewLength:format(preview.characters, preview.characterLimit, preview.bytes)
             or strings.previewIncomplete)
-        local summaries = {}
-        jump.issue = nil
-        for index, issue in ipairs(preview.diagnostics) do
-            if issue.line and not jump.issue then jump.issue = issue end
-            if index <= 4 then
-                local prefix = issue.severity == "error" and strings.errorPrefix or strings.warningPrefix
-                local location = issue.line and strings.lineNumber:format(issue.line) or ""
-                if issue.branch then location = location .. strings.branchNumber:format(issue.branch) end
-                if issue.group then location = location .. strings.groupNumber:format(issue.group) end
-                summaries[#summaries + 1] = prefix .. location .. (strings.diagnostic[issue.code] or issue.code)
-            end
+        if issueBody ~= draft.body then
+            issueBody, issueIndex = draft.body, 1
         end
-        if #preview.diagnostics > 4 then summaries[5] = strings.moreIssues:format(#preview.diagnostics - 4) end
-        issues:SetText(#summaries > 0 and table.concat(summaries, "\n") or strings.branchOrder)
-        if preview.canCopy then issues:SetTextColor(0.95, 0.87, 0.60) else issues:SetTextColor(1, 0.58, 0.48) end
-        jump:SetText(strings.inspectIssue)
-        jump:SetEnabled(jump.issue ~= nil)
+        local total = #preview.diagnostics
+        issueIndex = cap(issueIndex, total)
+        local issue = preview.diagnostics[issueIndex]
+        local detail = strings.branchOrder
+        if issue then
+            local prefix = issue.severity == "error" and strings.errorPrefix or strings.warningPrefix
+            local location = issue.line and strings.lineNumber:format(issue.line) or ""
+            if issue.branch then location = location .. strings.branchNumber:format(issue.branch) end
+            if issue.group then location = location .. strings.groupNumber:format(issue.group) end
+            detail = prefix .. location .. (strings.diagnostic[issue.reason or issue.code] or issue.code)
+        end
+        issueCount:SetText(total > 0 and strings.issueCount:format(issueIndex, total) or "")
+        issueCount:SetPoint("TOPLEFT", total > 1 and 337 or 266, -264)
+        previousIssue:SetShown(total > 1)
+        nextIssue:SetShown(total > 1)
+        previousIssue:SetEnabled(issueIndex > 1)
+        nextIssue:SetEnabled(issueIndex < total)
+        issues:SetText(detail)
+        if issue and issue.severity == "error" then
+            issues:SetTextColor(1, 0.58, 0.48)
+        else
+            issues:SetTextColor(0.95, 0.87, 0.60)
+        end
+        jump.issue = issue and issue.line and issue or nil
+        jump:SetText(not raw and issue and issue.branch and strings.inspectRule or strings.inspectLine)
+        jump:SetShown(jump.issue ~= nil)
         mode:SetText(raw and strings.convertToEditor or strings.editAsText)
         copyPreview:SetText(strings.selectMacro)
         copyPreview:SetEnabled(preview.canCopy)
