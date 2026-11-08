@@ -128,12 +128,25 @@ function GetBuildInfo() return "1.60.1", "70862", "Nov 6 2026", 16001 end
 function GetLocale() return "enUS" end
 local playerClass = "WARLOCK"
 function UnitClass() return playerClass, playerClass end
+local playerName = "Jaina"
+function UnitFullName() return playerName, "Example" end
 function InCombatLockdown() return false end
 function time() return 100 end
 function CreateMacro() error("Wizard must not create WoW macros") end
 function EditMacro() error("Wizard must not edit WoW macros") end
 function DeleteMacro() error("Wizard must not delete WoW macros") end
-C_AddOns = { GetAddOnMetadata = function() return "0.4.5" end }
+C_AddOns = { GetAddOnMetadata = function() return "0.4.6" end }
+Constants = { MacroConsts = { MAX_ACCOUNT_MACROS = 4, MAX_CHARACTER_MACROS = 3 } }
+local accountMacros = {
+    { "Krb", 134400, "#showtooltip Hearthstone\n/use Hearthstone" },
+    { "Kouzlo z jiné postavy", 134400, "#showtooltip\n/cast Unknown Spell" },
+}
+local characterMacros = {}
+function GetNumMacros() return #accountMacros, #characterMacros end
+function GetMacroInfo(index)
+    local macro = index <= 4 and accountMacros[index] or characterMacros[index - 4]
+    if macro then return unpack(macro) end
+end
 Enum = { SpellBookSpellBank = { Player = 0 } }
 local bookSpells = {
     { spellID = 35, name = "Léčení" },
@@ -500,13 +513,13 @@ click("Knihovna návrhů")
 assert(popup.text == "Uložit změny návrhu?" and popup.button2 == "Pokračovat v úpravách")
 respond("OnAlt")
 
-clickAt("Upravit kopii", 330, 137)
+clickAt("Upravit kopii", 239, 137)
 assert(editAt(174, 43):GetText() == "Kopie – Sebeobnova")
 assert(studio.library.Count() == 3)
 click("Knihovna návrhů")
 respond("OnAlt")
 assert(studio.library.Count() == 3)
-clickAt("Upravit kopii", 330, 137)
+clickAt("Upravit kopii", 239, 137)
 click("2  Cíl · Sebe")
 click("Aktuální cíl")
 click("5  Uložení")
@@ -517,4 +530,70 @@ assert(original.revision == 3 and original.body.lines[2].branches[1].groups[1].u
 assert(copied.title == "Kopie – Sebeobnova" and copied.revision == 1)
 assert(copied.body.lines[2].branches[1].groups[1].unit == "target")
 
-print("E04: wizard diagnostics, draft copying, preset availability, transfer, and popup typography passed")
+click("Knihovna návrhů")
+clickAt("Archivovat", 353, 137)
+assert(studio.library.Get("draft-1").archived)
+assert(not visible("Button", function(frame) return frame.text == "Sebeobnova" end))
+click("Zobrazit archiv")
+assert(button("Sebeobnova"))
+click("Obnovit")
+assert(not studio.library.Get("draft-1").archived)
+click("Zobrazit aktivní")
+
+click("Načíst z WoW")
+assert(button("Makra účtu").highlight)
+click("Krb")
+assert(rawBox():GetText() == accountMacros[1][3] and button("Upravit jako text"))
+click("5  Uložení")
+click("Uložit návrh")
+local importedAccount = assert(studio.library.Get("draft-5"))
+assert(importedAccount.icon == 134400 and importedAccount.character == nil and importedAccount.body.mode == "structured")
+click("Knihovna návrhů")
+click("Načíst z WoW")
+click("Kouzlo z jiné postavy")
+assert(button("4  Text makra").highlight and rawBox():GetText() == accountMacros[2][3])
+assert(label("Otevřeno jako text. řádek 2 · Pro „Unknown Spell“ se v knize nenašlo jediné odpovídající kouzlo."))
+click("Knihovna návrhů")
+respond("OnAlt")
+
+playerName = "Thrall"
+click("Načíst z WoW")
+click("Makra postavy")
+assert(label("V této skupině zatím žádná makra nejsou."))
+characterMacros[1] = { "Tretka", 134401, "/use [mod:shift,@mouseover,help,nodead][mod:shift,@target,help,nodead] 13; Hearthstone" }
+events:OnEvent("UPDATE_MACROS")
+click("Tretka")
+click("Zkouška nanečisto")
+assert(cardSays("Hearthstone · Výchozí cílení"))
+click("Stisknutý Shift")
+click("Aktuální cíl · Žádný")
+assert(cardSays("13 · Aktuální cíl"))
+click("Pod kurzorem · Žádný")
+assert(cardSays("13 · Pod kurzorem"))
+click("Pod kurzorem · Spojenec")
+assert(cardSays("13 · Aktuální cíl"))
+click("Zpět do náhledu")
+assert(rawBox():GetText() == "/use [@mouseover,mod:shift,help,nodead][@target,mod:shift,help,nodead] 13; Hearthstone")
+click("5  Uložení")
+click("Uložit návrh")
+assert(studio.library.Get("draft-6").character == "Thrall-Example")
+click("Knihovna návrhů")
+click("Postava · Všechny")
+assert(button("Postava · Jaina-Example").highlight and button("Sebeobnova"))
+assert(not visible("Button", function(frame) return frame.text == "Tretka" end))
+click("Postava · Jaina-Example")
+assert(button("Tretka"))
+assert(not visible("Button", function(frame) return frame.text == "Krb" end))
+click("Postava · Thrall-Example")
+assert(button("Krb"))
+click("Krb")
+click("5  Uložení")
+click("Přiřadit této postavě")
+assert(label("Přiřazená postava · Thrall-Example"))
+click("Uložit návrh")
+assert(studio.library.Get("draft-5").character == "Thrall-Example")
+click("Odebrat přiřazení")
+click("Uložit návrh")
+assert(studio.library.Get("draft-5").character == nil)
+
+print("E04: macro import, archive, character filters, simulated targeting, and editor regressions passed")

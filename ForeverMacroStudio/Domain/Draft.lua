@@ -72,6 +72,8 @@ end
 
 function Draft.CopyContent(draft)
     if type(draft) ~= "table" or type(draft.title) ~= "string" then return nil end
+    if draft.character ~= nil and (type(draft.character) ~= "string" or draft.character == "") then return nil end
+    if draft.archived ~= nil and type(draft.archived) ~= "boolean" then return nil end
     local icon = draft.icon
     if icon ~= nil and type(icon) ~= "string" and (not Draft.IsInteger(icon) or icon == 0) then return nil end
     local kind = draft.kind
@@ -80,7 +82,10 @@ function Draft.CopyContent(draft)
     local tags = copyArray(draft.tags, copyString)
     local body = Draft.CopyBody(draft.body)
     if tags and body then
-        return { title = draft.title, tags = tags, icon = icon, kind = kind, body = body }
+        return {
+            title = draft.title, tags = tags, icon = icon, kind = kind, body = body,
+            character = draft.character, archived = draft.archived,
+        }
     end
 end
 

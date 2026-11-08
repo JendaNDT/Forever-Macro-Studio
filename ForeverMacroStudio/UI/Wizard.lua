@@ -131,6 +131,7 @@ function studio.CreateWizard(parent, showLibrary)
     local view, editor, refresh = {}
     local step, selectedLine, selectedBranch, selectedGroup, category, message, advanced
     local issueIndex, issueBody = 1
+    local simulating, conversionIssue
     local pendingClose
     local steps = {}
     for index = 1, 5 do
@@ -413,25 +414,32 @@ function studio.CreateWizard(parent, showLibrary)
     local conditionHint = W.Label(steps[3], 266, 328, 463)
     local conditionOverview = W.Label(steps[3], 266, 144, 463)
 
-    local textBox = W.Box(steps[4], 266, 127, 466, 105, true)
-    local previewLabel = W.Label(steps[4], 266, 109, 245)
-    local previewStatus = W.Label(steps[4], 517, 109, 215)
+    local previewPanel = CreateFrame("Frame", nil, steps[4])
+    previewPanel:SetAllPoints(steps[4])
+    local simulator = studio.CreateSimulator(steps[4], function() refresh() end)
+    local simulate = W.Button(steps[4], 423, 485, 194, function()
+        simulating, message = not simulating, nil
+        refresh()
+    end)
+    local textBox = W.Box(previewPanel, 266, 127, 466, 105, true)
+    local previewLabel = W.Label(previewPanel, 266, 109, 245)
+    local previewStatus = W.Label(previewPanel, 517, 109, 215)
     previewStatus:SetJustifyH("RIGHT")
-    local counts = W.Label(steps[4], 266, 238, 466)
-    local issueCount = W.Label(steps[4], 337, 264, 395)
-    local issues = W.Label(steps[4], 266, 291, 466)
+    local counts = W.Label(previewPanel, 266, 238, 466)
+    local issueCount = W.Label(previewPanel, 337, 264, 395)
+    local issues = W.Label(previewPanel, 266, 291, 466)
     issues:SetSpacing(2)
-    local previousIssue = W.Button(steps[4], 266, 260, 30, function()
+    local previousIssue = W.Button(previewPanel, 266, 260, 30, function()
         issueIndex = issueIndex - 1
         refresh()
     end)
-    local nextIssue = W.Button(steps[4], 300, 260, 30, function()
+    local nextIssue = W.Button(previewPanel, 300, 260, 30, function()
         issueIndex = issueIndex + 1
         refresh()
     end)
     previousIssue:SetText("<")
     nextIssue:SetText(">")
-    local transfer = W.Label(steps[4], 266, 392, 466)
+    local transfer = W.Label(previewPanel, 266, 392, 466)
     transfer:SetSpacing(2)
     local function selectPreviewText()
         textBox:SetFocus()
@@ -439,8 +447,8 @@ function studio.CreateWizard(parent, showLibrary)
         message = "copyHint"
         refresh()
     end
-    local copyPreview = W.Button(steps[4], 266, 358, 170, selectPreviewText)
-    local jump = W.Button(steps[4], 443, 358, 138, function(self)
+    local copyPreview = W.Button(previewPanel, 266, 358, 170, selectPreviewText)
+    local jump = W.Button(previewPanel, 443, 358, 138, function(self)
         local issue = self.issue
         if not issue then return end
         if editor.Get().body.mode == "raw" then
@@ -460,15 +468,15 @@ function studio.CreateWizard(parent, showLibrary)
             goTo(issue.code == "unsupported-unit" and 2 or issue.group and 3 or 1)
         end
     end)
-    local mode = W.Button(steps[4], 588, 358, 146, function()
+    local mode = W.Button(previewPanel, 588, 358, 146, function()
         local body, strings = editor.Get().body, studio.GetStrings()
         if body.mode == "raw" then
-            local structured = Compiler.ToStructured(body, Catalog.SpellId, Catalog.SpellName)
+            local structured, issue = Compiler.ToStructured(body, Catalog.SpellId, Catalog.SpellName)
             if structured then
                 advanced = selectFirstAction(structured) or advanced
                 update(function(draft) draft.body = structured end)
             else
-                message = "convertFailed"
+                message, conversionIssue = "convertFailed", issue
                 refresh()
             end
             return
@@ -502,7 +510,7 @@ function studio.CreateWizard(parent, showLibrary)
     textBox:SetScript("OnEditFocusLost", function() if editor then editor.EndEdit() end end)
     title:SetScript("OnTabPressed", function(self)
         self:ClearFocus()
-        if step == 1 then catalogFilter:SetFocus() elseif step == 4 then textBox:SetFocus() end
+        if step == 1 then catalogFilter:SetFocus() elseif step == 4 and not simulating then textBox:SetFocus() end
     end)
     catalogFilter:SetScript("OnTabPressed", function(self) self:ClearFocus(); title:SetFocus() end)
     textBox:SetScript("OnTabPressed", function(self)
@@ -510,7 +518,19 @@ function studio.CreateWizard(parent, showLibrary)
     end)
 
     local saveDescription = W.Label(steps[5], 266, 120, 465)
+    local draftCharacter = W.Label(steps[5], 266, 196, 465)
     local saveButton = W.Button(steps[5], 266, 235, 166, save)
+    local assignCharacter = W.Button(steps[5], 441, 235, 217, function()
+        local character = studio.GetCharacterName()
+        if not character or studio.library.issue then return end
+        update(function(draft)
+            if draft.character == character then
+                draft.character = nil
+            else
+                draft.character = character
+            end
+        end)
+    end)
 
     local function renderAction(strings, argument)
         categories.spell:SetText(strings.spellBook)
@@ -615,7 +635,8 @@ function studio.CreateWizard(parent, showLibrary)
         if raw and step < 4 then step = 4 end
         local line, branch, group, lineCount, branchCount, groupCount = current()
         local argument = branch and branch.argument
-        local picked = argument and (argument.id ~= nil or (argument.kind == "slot" and argument.token ~= ""))
+        local picked = argument and (argument.id ~= nil
+            or (argument.kind == "slot" or argument.kind == "name") and argument.token ~= "")
         local guidedGroups = not advanced and groupCount > 1
 
         libraryButton:SetText(strings.library)
@@ -630,7 +651,16 @@ function studio.CreateWizard(parent, showLibrary)
         back:SetEnabled(step > (raw and 4 or 1))
         nextStep:SetText(strings.nextStep)
         nextStep:SetEnabled(step < 5 and (step ~= 1 or advanced or picked == true))
-        feedback:SetText(message and strings[message] or "")
+        local note = message and strings[message] or ""
+        if message == "convertFailed" and conversionIssue then
+            local reason = conversionIssue.name and strings.conversionSpell:format(W.SafeText(conversionIssue.name))
+                or strings.diagnostic[conversionIssue.code]
+            if reason then
+                local location = conversionIssue.line and strings.lineNumber:format(conversionIssue.line) or ""
+                note = strings.conversionReason:format(location .. reason)
+            end
+        end
+        feedback:SetText(note)
         renderSummary(strings, raw, branch, group, branchCount, picked)
         outline:SetShown(advanced and not raw)
         groupPanel:SetShown(advanced and not raw and (step == 2 or step == 3))
@@ -676,23 +706,40 @@ function studio.CreateWizard(parent, showLibrary)
         else
             local preview = Compiler.Compile(draft.body, Catalog.SpellName)
             if step == 4 then
-                renderPreview(strings, draft, preview)
+                simulator.panel:SetShown(simulating)
+                previewPanel:SetShown(not simulating)
+                simulate:SetText(simulating and strings.simulator.back or strings.simulator.open)
+                simulate:SetEnabled(simulating or preview.canCopy)
+                if simulating then
+                    simulator.Render(preview, strings)
+                else
+                    renderPreview(strings, draft, preview)
+                end
             else
                 saveDescription:SetText(studio.library.issue and strings.storageInvalid
                     or preview.canCopy and guide.lessons[5] or strings.saveIncomplete)
+                local character = studio.GetCharacterName()
+                local assigned = draft.character and W.SafeText(draft.character) or strings.unassignedCharacter
+                draftCharacter:SetText(strings.draftCharacter:format(assigned))
+                assignCharacter:SetText(character and draft.character == character
+                    and strings.clearCharacter or strings.assignCharacter)
+                assignCharacter:SetEnabled(character ~= nil and not studio.library.issue)
                 saveButton:SetText(strings.saveDraft)
                 saveButton:SetEnabled(not studio.library.issue)
             end
         end
     end
 
-    function view.Start(draft, raw, starter)
+    function view.Start(draft, raw, starter, options)
         editor = Editor.Open(draft, raw, studio.client.locale, starter)
         local body = editor.Get().body
-        step = (body.mode == "raw" or starter and starter.action) and 4 or 1
+        step = (body.mode == "raw" or starter and starter.action or options and options.preview) and 4 or 1
         local complex = selectFirstAction(body)
         advanced = not starter and complex
-        category, message = "spell", nil
+        simulating = false
+        simulator.Reset()
+        conversionIssue = options and options.conversionIssue
+        category, message = "spell", conversionIssue and "convertFailed" or nil
         catalogPager.page = 1
         W.SetText(catalogFilter, "")
         frame:Show()

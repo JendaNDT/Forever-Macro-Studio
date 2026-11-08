@@ -12,6 +12,12 @@ Záložka **Profese** nabízí 12 přednastavení pro otevření výrobních oke
 
 **Vložit text** otevře textový režim. **Vizuální editor** převede text, když kompilátor dokáže zachovat stejné příkazy, cíle, podmínky a argumenty. Návrh s chybou můžeš uložit k pozdějšímu zpracování. Pokud uložená knihovna vyžaduje obnovu, `/fms rescue` otevře čitelné návrhy ke zkopírování.
 
+Pomocí **Načíst z WoW** vyber makro účtu nebo postavy a otevři ho jako nový návrh. Studio zkusí převod do vizuálního editoru včetně příkazů jako `/use Hearthstone`. Když převod nejde, zobrazí původní text a důvod. Návrh se přidá do knihovny po uložení.
+
+Knihovna řadí návrhy podle poslední změny. Tlačítkem **Postava** projdeš jednotlivé postavy a návrhy bez přiřazení. Přiřazení lze změnit v kroku **Uložení**. Tlačítka **Archivovat** a **Obnovit** přesouvají návrhy mezi aktivní knihovnou a archivem.
+
+V náhledu otevři **Zkouška nanečisto** a měň stav cíle, stav jednotky pod kurzorem nebo podržené klávesy. Studio ukáže první odpovídající pravidlo na každém řádku. Zkouška počítá se živou postavou. Dosah, zdroje a dobu obnovení vyhodnocuje hra.
+
 V náhledu můžeš procházet zjištění pomocí šipek. **Ukázat pravidlo** otevře příslušnou větev nebo podmínku. V textovém režimu **Ukázat řádek** označí související řádek. Tlačítkem **Upravit kopii** v knihovně otevřeš samostatný návrh, který se přidá do knihovny po uložení. U nedostupných třídních dvojic karta ukáže, které kouzlo chybí pro běžný stisk nebo pro Shift.
 
 Příkaz `/fms debug compiler` vypíše ukázku generování i délku výsledku. Kompilátor počítá znaky UTF-8 a bajty po sjednocení konců řádků na LF. Pro ruční přenos používá limit 255 znaků z vestavěného editoru. Statická kontrola pracuje s počáteční sadou jednotek `player`, `target` a `mouseover` a podmínkami `help`, `harm`, `exists`, `nodead` a `mod:shift/ctrl/alt`. Ověření chování maker ve hře je popsané v E00.

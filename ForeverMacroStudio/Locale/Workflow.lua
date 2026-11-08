@@ -1,0 +1,69 @@
+local _, studio = ...
+
+local workflows = {
+    enUS = {
+        importMacros = "Load from WoW", backToDrafts = "Back to drafts", importHeading = "Macros in WoW",
+        accountMacros = "Account macros", characterMacros = "Character macros", importCount = "WoW macros: %d",
+        importHint = "Choose a macro to open as a new draft.",
+        importEmpty = "There are no macros in this group.",
+        importNoMatches = "No WoW macros match the search.",
+        importUnavailable = "WoW macros could not be read. Try again out of combat.",
+        archiveDraft = "Archive", restoreDraft = "Restore", archivedDrafts = "Show archive", activeDrafts = "Show active",
+        archiveEmpty = "The archive is empty.", draftArchived = "Draft moved to the archive.",
+        draftRestored = "Draft restored to the library.",
+        characterFilter = "Character · %s", allCharacters = "All", unassignedCharacter = "Unassigned",
+        draftCharacter = "Assigned character · %s",
+        assignCharacter = "Assign to this character", clearCharacter = "Clear character assignment",
+        conversionReason = "Opened as text. %s", conversionSpell = "The spellbook does not resolve %s to a single spell.",
+        simulator = {
+            open = "Try the macro", back = "Back to preview", intro = "Click a target to change its state. Toggle modifier keys to see which rule the macro picks.",
+            unit = "%s · %s", position = "%d / %d · line %d",
+            states = {
+                none = "None", friendly = "Friendly", hostile = "Hostile", neutral = "Neutral",
+                deadFriendly = "Dead ally", deadHostile = "Dead enemy",
+            },
+            noActions = "This macro has no action lines to try.",
+            invalid = "Fix the errors in Preview to try this macro.",
+            noMatch = "No rule on this line matches this situation.",
+            action = "%s · %s", branch = "Option %d is the first match.", group = "Option %d, rule %d is the first match.",
+            match = "Matching conditions · %s", unconditional = "This rule has no conditions.",
+            absent = "The chosen target is absent in this scenario.",
+            boundary = "Checks targeting rules. The scenario assumes your character is alive. Range, resources and cooldowns are up to the game.",
+        },
+    },
+    csCZ = {
+        importMacros = "Načíst z WoW", backToDrafts = "Zpět k návrhům", importHeading = "Makra ve WoW",
+        accountMacros = "Makra účtu", characterMacros = "Makra postavy", importCount = "Maker ve WoW: %d",
+        importHint = "Vyber makro, které chceš otevřít jako nový návrh.",
+        importEmpty = "V této skupině zatím žádná makra nejsou.",
+        importNoMatches = "Hledání nenašlo žádné herní makro.",
+        importUnavailable = "Makra z WoW se nepodařilo přečíst. Zkus to znovu mimo boj.",
+        archiveDraft = "Archivovat", restoreDraft = "Obnovit", archivedDrafts = "Zobrazit archiv", activeDrafts = "Zobrazit aktivní",
+        archiveEmpty = "Archiv je prázdný.", draftArchived = "Návrh je v archivu.",
+        draftRestored = "Návrh je zpátky v knihovně.",
+        characterFilter = "Postava · %s", allCharacters = "Všechny", unassignedCharacter = "Bez přiřazení",
+        draftCharacter = "Přiřazená postava · %s",
+        assignCharacter = "Přiřadit této postavě", clearCharacter = "Odebrat přiřazení",
+        conversionReason = "Otevřeno jako text. %s", conversionSpell = "Pro „%s“ se v knize nenašlo jediné odpovídající kouzlo.",
+        simulator = {
+            open = "Zkouška nanečisto", back = "Zpět do náhledu", intro = "Klikáním změň stav cíle a zapni klávesy, které chceš držet. Uvidíš, které pravidlo makro vybere.",
+            unit = "%s · %s", position = "%d / %d · řádek %d",
+            states = {
+                none = "Žádný", friendly = "Spojenec", hostile = "Nepřítel", neutral = "Neutrální",
+                deadFriendly = "Mrtvý spojenec", deadHostile = "Mrtvý nepřítel",
+            },
+            noActions = "V makru není žádný řádek s akcí k vyzkoušení.",
+            invalid = "Nejdřív oprav chyby v náhledu makra.",
+            noMatch = "V této situaci nevyhovuje žádné pravidlo na řádku.",
+            action = "%s · %s", branch = "Jako první vyhovuje varianta %d.",
+            group = "Jako první vyhovuje varianta %d, pravidlo %d.",
+            match = "Splněné podmínky · %s", unconditional = "Pravidlo je bez podmínek.",
+            absent = "Zvolený cíl v této situaci chybí.",
+            boundary = "Zkouška vyhodnocuje pravidla cílení a počítá se živou postavou. Dosah, zdroje a dobu obnovení vyhodnocuje hra.",
+        },
+    },
+}
+
+for locale, strings in pairs(workflows) do
+    for key, value in pairs(strings) do studio.strings[locale][key] = value end
+end

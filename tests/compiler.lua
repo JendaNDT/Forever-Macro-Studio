@@ -1,6 +1,6 @@
 -- Run from the project root with lua5.1 tests/compiler.lua.
 local studio = {}
-for _, name in ipairs({ "Draft", "MacroText", "MacroSyntax", "Compiler" }) do
+for _, name in ipairs({ "Draft", "MacroText", "MacroSyntax", "Compiler", "Simulator" }) do
     assert(loadfile("ForeverMacroStudio/Domain/" .. name .. ".lua"))("ForeverMacroStudio", studio)
 end
 local Compiler = studio.Compiler
@@ -136,5 +136,17 @@ for length = 254, 256 do
 end
 local nonBmp = Compiler.ValidateText("/cast Ž𐐀")
 assert(nonBmp.characters == 8 and nonBmp.bytes == 12 and nonBmp.canCopy)
+
+local namedUse = "#showtooltip Hearthstone\n/use [mod:shift] 13; Hearthstone"
+local parsed = assert(Compiler.ToStructured({ mode = "raw", text = namedUse, sourceLocale = "enUS" }))
+assert(Compiler.Compile(parsed).text == namedUse)
+local rejected, reason = Compiler.ToStructured({ mode = "raw", text = "#showtooltip\n\n/cast Unknown", sourceLocale = "enUS" })
+assert(not rejected and reason.code == "unresolved-spell" and reason.line == 3 and reason.name == "Unknown")
+local scenario = { target = "friendly", mouseover = "deadFriendly", modifiers = { ["mod:shift"] = true } }
+local simulation = studio.Simulator.Evaluate("#showtooltip\n\n"
+    .. "/cast [@mouseover,help,nodead][@target,help,nodead] Heal\n"
+    .. "/use [mod:shift] 13; Hearthstone\n/cast [@mouseover,harm] Smite", scenario)
+assert(#simulation == 3 and simulation[1].line == 3 and simulation[1].groupIndex == 2)
+assert(simulation[2].value == "13" and simulation[3].value == nil)
 
 print("E03: generation, raw validation, branch diagnostics and UTF-8 length passed")

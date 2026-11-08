@@ -62,6 +62,14 @@ function Compiler.ValidateText(input)
 end
 
 local function resolveArgument(command, argument, resolveSpellName)
+    if argument.kind == "name" and (command == "/use" or command == "#showtooltip") then
+        local name = argument.token
+        if Text.Trim(name) == name and Syntax.IsName(name) and Text.CountCharacters(name)
+            and not Text.HasControls(name) and not Syntax.CheckArgument(command, name) then
+            return name
+        end
+        return nil, "invalid-argument"
+    end
     if argument.kind == "spell" and command ~= "/use" then
         local name = argument.id and type(resolveSpellName) == "function" and resolveSpellName(argument.id)
         if type(name) ~= "string" or name == "" then return nil, "unresolved-spell" end
@@ -121,15 +129,17 @@ local function identifyArgument(command, value, findSpellId)
     local item = tonumber((value:match("^item:(%d+)$")))
     if item then return { kind = "item", id = item, token = value } end
     if value:match("^%d+$") then return { kind = "slot", token = value } end
-    local spell = command ~= "/use" and type(findSpellId) == "function" and findSpellId(value)
+    if command == "/use" then return { kind = "name", token = value } end
+    local spell = type(findSpellId) == "function" and findSpellId(value)
     if spell then return { kind = "spell", id = spell, token = value } end
+    if command == "#showtooltip" then return { kind = "name", token = value } end
 end
 
 function Compiler.ToStructured(body, findSpellId, resolveSpellName)
     if type(body) ~= "table" or body.mode ~= "raw" then return nil end
     local checked = Compiler.ValidateText(body.text)
     for _, diagnostic in ipairs(checked.diagnostics) do
-        if diagnostic.severity == "error" and diagnostic.code ~= "macro-too-long" then return nil end
+        if diagnostic.severity == "error" and diagnostic.code ~= "macro-too-long" then return nil, diagnostic end
     end
     local backup = body.structuredBackup
     if backup and Compiler.Compile(backup, resolveSpellName).text == checked.text then
@@ -137,7 +147,9 @@ function Compiler.ToStructured(body, findSpellId, resolveSpellName)
     end
 
     local structured, canonical = { mode = "structured", lines = {} }, {}
+    local lineNumber = 0
     for rawLine in (checked.text .. "\n"):gmatch("([^\n]*)\n") do
+        lineNumber = lineNumber + 1
         local text = Text.Trim(rawLine)
         if text ~= "" then
             local parsed = Syntax.ParseLine(text)
@@ -147,7 +159,7 @@ function Compiler.ToStructured(body, findSpellId, resolveSpellName)
             local branches = {}
             for index, branch in ipairs(parsed.branches) do
                 local argument = identifyArgument(command, branch.value, findSpellId)
-                if not argument then return nil end
+                if not argument then return nil, { code = "unresolved-spell", line = lineNumber, name = branch.value } end
                 line.branches[index] = { groups = branch.groups, argument = argument }
                 branches[index] = renderBranch(branch.groups, branch.value)
             end
@@ -156,6 +168,7 @@ function Compiler.ToStructured(body, findSpellId, resolveSpellName)
         end
     end
     if Compiler.Compile(structured, resolveSpellName).text == table.concat(canonical, "\n") then return structured end
+    return nil, { code = "conversion-mismatch" }
 end
 
 function Compiler.Compile(body, resolveSpellName)

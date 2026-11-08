@@ -34,7 +34,7 @@ local function start(saved)
 end
 
 local library, database, fms = start()
-assert(database.schemaVersion == 2 and library.Count() == 0)
+assert(database.schemaVersion == 3 and library.Count() == 0)
 fms("debug")
 assert(table.concat(lines, "\n"):find("Drafts in library: 0", 1, true))
 fms("debug compiler")
@@ -43,7 +43,7 @@ assert(lines[#lines - 1] == "#showtooltip" and lines[#lines] == "/use [mod:shift
 local old = { schemaVersion = 1, preferences = { language = "csCZ" } }
 library, database, fms = start(old)
 assert(database ~= old and old.schemaVersion == 1 and old.drafts == nil)
-assert(database.schemaVersion == 2 and database.preferences ~= old.preferences)
+assert(database.schemaVersion == 3 and database.preferences ~= old.preferences)
 assert(library.preferences.language == "csCZ" and not library.issue)
 
 local raw = {
@@ -60,7 +60,7 @@ assert(library.Get(created.id).tags[1] == "podpora")
 assert(library.Get(created.id).body.text:find("žluťoučký", 1, true))
 
 local structured = {
-    title = "Mouseover",
+    title = "Mouseover", character = "Karel-Example",
     tags = {},
     kind = "template",
     body = { mode = "structured", lines = {
@@ -90,9 +90,19 @@ invalid.body.lines[2].branches[1].groups[1].predicates = { [2] = "nodead" }
 saved, errorCode = library.Save(invalid)
 assert(saved == nil and errorCode == "invalid-draft" and library.Get(second.id).revision == 1)
 
-library, database, fms = start(database)
+local version2 = { schemaVersion = 2, preferences = database.preferences, drafts = database.drafts, nextDraftId = 3 }
+library, database, fms = start(version2)
+assert(database.schemaVersion == 3 and version2.schemaVersion == 2)
+assert(database.drafts ~= version2.drafts)
 assert(library.Get(created.id).revision == 2 and library.Count() == 2)
+assert(library.List()[1].id == created.id)
 assert(library.List()[2].body.lines[2].branches[1].argument.id == 1234)
+assert(library.List()[2].character == "Karel-Example")
+local archived = library.Get(created.id)
+archived.archived = true
+assert(library.Save(archived))
+library, database, fms = start(database)
+assert(library.Get(created.id).archived and library.Count() == 2)
 fms("debug")
 assert(table.concat(lines, "\n"):find("Návrhy v knihovně: 2", 1, true))
 
@@ -109,12 +119,13 @@ assert(corrupt.preferences.language == "csCZ")
 fms("rescue")
 assert(rescue and not rescue:find("|", 1, true))
 local recovered = assert(loadstring(rescue))()
-assert(recovered.schemaVersion == 2 and recovered.drafts["draft-1"].body.text == corrupt.drafts["draft-1"].body.text)
+assert(recovered.schemaVersion == 3 and recovered.drafts["draft-1"].body.text == corrupt.drafts["draft-1"].body.text)
+assert(recovered.drafts["draft-1"].archived == true)
 assert(recovered.drafts["draft-2"] == nil and recovered.preferences == nil)
 
-corrupt.schemaVersion = 3
+corrupt.schemaVersion = 4
 library, database = start(corrupt)
-assert(database == corrupt and database.schemaVersion == 3 and library.issue == "future-schema")
+assert(database == corrupt and database.schemaVersion == 4 and library.issue == "future-schema")
 assert(library.RescueText())
 library, database = start("not a table")
 assert(database == "not a table" and library.issue == "invalid-storage" and library.RescueText() == nil)

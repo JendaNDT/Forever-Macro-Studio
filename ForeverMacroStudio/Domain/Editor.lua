@@ -42,7 +42,10 @@ local function newDraft(raw, locale, starter)
         end
         body = Draft.CopyBody(body)
     end
-    return { title = starter and starter.title or "", kind = "macro", tags = {}, body = body }
+    return {
+        title = starter and starter.title or "", kind = "macro", tags = {}, body = body,
+        character = studio.GetCharacterName and studio.GetCharacterName(),
+    }
 end
 
 function Editor.NewBranch(kind)

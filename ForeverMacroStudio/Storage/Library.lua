@@ -1,6 +1,6 @@
 local _, studio = ...
 local Draft = studio.Draft
-local schemaVersion = 2
+local schemaVersion = 3
 local validLanguage = { auto = true, csCZ = true, enUS = true }
 
 local function copyTable(source)
@@ -48,6 +48,12 @@ local function prepare(saved)
         root.preferences = copyTable(saved.preferences)
         root.schemaVersion, root.drafts, root.nextDraftId = schemaVersion, {}, 1
     end
+    if saved.schemaVersion == 2 and validateRoot(saved) then
+        root = copyTable(saved)
+        root.preferences = copyTable(saved.preferences)
+        root.drafts = copyTable(saved.drafts)
+        root.schemaVersion = schemaVersion
+    end
     if root.schemaVersion == schemaVersion and validateRoot(root) then return root end
     return nil, "invalid-storage"
 end
@@ -69,6 +75,7 @@ local function serialize(value, indent)
         return escaped
     end
     if type(value) == "number" then return ("%.0f"):format(value) end
+    if type(value) == "boolean" then return tostring(value) end
     local keys = {}
     for key in pairs(value) do keys[#keys + 1] = key end
     table.sort(keys)
@@ -102,11 +109,12 @@ function studio.OpenLibrary(saved, now)
     end
 
     function library.List()
-        local ids = {}
-        for id in pairs(drafts) do ids[#ids + 1] = id end
-        table.sort(ids)
         local result = {}
-        for _, id in ipairs(ids) do result[#result + 1] = Draft.Copy(drafts[id]) end
+        for _, draft in pairs(drafts) do result[#result + 1] = Draft.Copy(draft) end
+        table.sort(result, function(left, right)
+            if left.updatedAt ~= right.updatedAt then return left.updatedAt > right.updatedAt end
+            return left.id < right.id
+        end)
         return result
     end
 

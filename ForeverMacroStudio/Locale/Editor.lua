@@ -41,6 +41,7 @@ local enUS = {
     saveIncomplete = "You can save this as a draft. Resolve errors in the preview before transferring it.",
     diagnostic = {
         ["invalid-text"] = "Invalid macro text.", ["invalid-body"] = "Invalid draft.",
+        ["conversion-mismatch"] = "The visual editor cannot preserve the macro's arguments.",
         ["invalid-utf8"] = "Invalid UTF-8 text.", ["empty-macro"] = "The macro is empty.",
         ["macro-too-long"] = "The text exceeds the limit for /macro.", ["control-character"] = "Invalid control character.",
         ["unsupported-command"] = "Unsupported command.", ["unsupported-unit"] = "Unsupported target.",
@@ -97,6 +98,7 @@ local csCZ = {
     saveIncomplete = "Návrh můžeš uložit jako rozpracovaný. Před přenosem oprav chyby v náhledu.",
     diagnostic = {
         ["invalid-text"] = "Neplatný text makra.", ["invalid-body"] = "Neplatný návrh.",
+        ["conversion-mismatch"] = "Vizuální editor nedokáže zachovat argumenty makra.",
         ["invalid-utf8"] = "Neplatný text UTF-8.", ["empty-macro"] = "Makro je prázdné.",
         ["macro-too-long"] = "Text překračuje limit editoru /macro.", ["control-character"] = "Neplatný řídicí znak.",
         ["unsupported-command"] = "Nepodporovaný příkaz.", ["unsupported-unit"] = "Nepodporovaný cíl.",

@@ -55,7 +55,9 @@ events:SetScript("OnEvent", function(frame, event, arg1, arg2)
         SlashCmdList.FOREVER_MACRO_STUDIO = onCommand
         frame:RegisterEvent("PLAYER_REGEN_DISABLED")
         frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        for _, catalogEvent in ipairs({ "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "BAG_UPDATE_DELAYED", "ITEM_DATA_LOAD_RESULT" }) do
+        for _, catalogEvent in ipairs({
+            "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "BAG_UPDATE_DELAYED", "ITEM_DATA_LOAD_RESULT", "UPDATE_MACROS",
+        }) do
             frame:RegisterEvent(catalogEvent)
         end
         return
