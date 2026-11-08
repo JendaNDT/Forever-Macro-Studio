@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Forever Macro Studio - E00 Probe
+## Notes: Local compatibility tests for World of Warcraft: Forever.
+## Version: 0.1.1
+## OptionalDeps: ForeverMacroStudio
+## SavedVariables: ForeverMacroStudioProbeDB
+## SavedVariablesPerCharacter: ForeverMacroStudioProbeCharDB
+
+Probe.lua

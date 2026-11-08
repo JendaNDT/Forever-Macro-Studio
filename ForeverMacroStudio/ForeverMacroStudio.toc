@@ -1,0 +1,25 @@
+## Interface: 16001
+## Title: Forever Macro Studio
+## Notes: Build and manage macros for World of Warcraft: Forever.
+## Version: 0.4.2
+## SavedVariables: ForeverMacroStudioDB
+
+Locale/Strings.lua
+Locale/Editor.lua
+Locale/Guide.lua
+Core/Capabilities.lua
+Domain/Draft.lua
+Domain/MacroText.lua
+Domain/MacroSyntax.lua
+Domain/Compiler.lua
+Domain/Editor.lua
+Domain/Presets.lua
+Storage/Library.lua
+WoW/Catalog.lua
+UI/Fonts.lua
+UI/Widgets.lua
+UI/Wizard.lua
+UI/PresetPanels.lua
+UI/Main.lua
+UI/Rescue.lua
+Bootstrap.lua
