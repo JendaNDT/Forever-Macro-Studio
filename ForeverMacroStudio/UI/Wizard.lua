@@ -45,6 +45,32 @@ local function actionName(argument, strings)
     return name and W.SafeText(name)
 end
 
+local function summarizeBranch(branch, group, branchCount, advanced, strings)
+    local guide = strings.guide
+    if not branch then return strings.noAction end
+    if not advanced and branchCount > 1 then
+        return guide.summaryVariants:format(branchCount), guide.summaryByVariant, guide.summaryByVariant
+    end
+
+    local argument = branch.argument
+    local action = actionName(argument, strings)
+    if not action then
+        action = argument.token ~= "" and W.SafeText(strings.spellMissing:format(argument.token)) or strings.noAction
+    end
+    local unit = group and group.unit or ""
+    local target = strings.targets[unit] or W.SafeText(unit)
+    local labels = {}
+    for _, predicate in ipairs(group and group.predicates or {}) do
+        labels[#labels + 1] = strings.conditions[predicate] or W.SafeText(predicate)
+    end
+    local rules = #labels > 0 and table.concat(labels, ", ") or guide.summaryNoConditions
+    if not advanced and #branch.groups > 1 then
+        local more = (" +%d"):format(#branch.groups - 1)
+        target, rules = target .. more, rules .. more
+    end
+    return action, target, rules
+end
+
 local function describeMacro(body, strings)
     local guide = strings.guide
     if body.mode == "raw" then return guide.complex end
@@ -124,6 +150,19 @@ function studio.CreateWizard(parent, showLibrary)
         return line, branch, groups[selectedGroup], #lines, #branches, #groups
     end
 
+    local function selectFirstAction(body)
+        selectedLine, selectedBranch, selectedGroup = 1, 1, 1
+        local actions, multiBranch = 0, false
+        for index, line in ipairs(body.lines or {}) do
+            if line.command then
+                if actions == 0 then selectedLine = index end
+                actions = actions + 1
+            end
+            if #line.branches > 1 then multiBranch = true end
+        end
+        return multiBranch or actions > 1
+    end
+
     local function update(action, key)
         editor.Change(action, key)
         message = nil
@@ -183,26 +222,35 @@ function studio.CreateWizard(parent, showLibrary)
     local redo = W.Button(frame, 644, 42, 94, function() editor.Redo(); message = nil; refresh() end)
     local stepTitle = W.Label(frame, 266, 85, 470, true)
     local feedback = W.Label(frame, 24, 459, 710)
+
+    local function goTo(destination)
+        step, message = destination, nil
+        refresh()
+    end
+    local summary = W.Label(frame, 24, 87, 215, true)
+    local stepButtons = {}
+    for index = 1, #steps do
+        local destination = index
+        local button = W.Button(frame, 24, 111 + (index - 1) * 26, 215, function() goTo(destination) end)
+        local label = button:GetFontString()
+        label:SetWidth(196)
+        label:SetJustifyH("LEFT")
+        label:SetWordWrap(false)
+        label:SetMaxLines(1)
+        stepButtons[index] = button
+    end
+
     local guidePanel = CreateFrame("Frame", nil, frame)
     guidePanel:SetAllPoints(frame)
-    local guideTitle = W.Label(guidePanel, 24, 93, 215, true)
-    local guideText = W.Label(guidePanel, 24, 122, 214)
-    guideText:SetSpacing(4)
-    local guideSelection = W.Label(guidePanel, 24, 285, 214)
-    local showAdvanced = W.Button(frame, 24, 413, 215, function()
+    local guideTitle = W.Label(guidePanel, 24, 253, 215, true)
+    local guideText = W.Label(guidePanel, 24, 277, 214)
+    guideText:SetSpacing(2)
+    local showAdvanced = W.Button(frame, 24, 428, 215, function()
         advanced = not advanced
         refresh()
     end)
-    local back = W.Button(frame, 24, 485, 110, function()
-        step = step - 1
-        message = nil
-        refresh()
-    end)
-    local nextStep = W.Button(frame, 628, 485, 110, function()
-        step = step + 1
-        message = nil
-        refresh()
-    end)
+    local back = W.Button(frame, 24, 485, 110, function() goTo(step - 1) end)
+    local nextStep = W.Button(frame, 628, 485, 110, function() goTo(step + 1) end)
 
     title:SetScript("OnTextChanged", function(self, user)
         if user and editor then
@@ -213,8 +261,7 @@ function studio.CreateWizard(parent, showLibrary)
 
     local outline = CreateFrame("Frame", nil, frame)
     outline:SetAllPoints(frame)
-    local activeAction = W.Label(outline, 24, 211, 216)
-    local lineNav = makeNavigator(outline, 24, 91, 218, function(delta)
+    local lineNav = makeNavigator(outline, 24, 249, 218, function(delta)
         selectedLine, selectedBranch, selectedGroup = selectedLine + delta, 1, 1
         message = nil
         refresh()
@@ -233,7 +280,7 @@ function studio.CreateWizard(parent, showLibrary)
             end
         end)
     end)
-    local branchNav = makeNavigator(outline, 24, 151, 218, function(delta)
+    local branchNav = makeNavigator(outline, 24, 307, 218, function(delta)
         selectedBranch, selectedGroup = selectedBranch + delta, 1
         message = nil
         refresh()
@@ -253,7 +300,7 @@ function studio.CreateWizard(parent, showLibrary)
             end
         end)
     end)
-    local tooltip = W.Button(outline, 24, 274, 194, function()
+    local tooltip = W.Button(outline, 24, 370, 194, function()
         update(function(draft)
             local lines = draft.body.lines
             for index, line in ipairs(lines) do
@@ -400,6 +447,7 @@ function studio.CreateWizard(parent, showLibrary)
         if body.mode == "raw" then
             local structured = Compiler.ToStructured(body, Catalog.SpellId, Catalog.SpellName)
             if structured then
+                advanced = selectFirstAction(structured) or advanced
                 update(function(draft) draft.body = structured end)
             else
                 message = "convertFailed"
@@ -510,6 +558,22 @@ function studio.CreateWizard(parent, showLibrary)
         copyPreview:SetEnabled(preview.canCopy)
     end
 
+    local function renderSummary(strings, raw, branch, group, branchCount, picked)
+        local guide = strings.guide
+        local action, target, rules = summarizeBranch(branch, group, branchCount, advanced, strings)
+        local values = { action, target, rules }
+        summary:SetText(guide.summaryTitle)
+        for index, button in ipairs(stepButtons) do
+            local title = raw and index == 4 and guide.summaryRaw or guide.summarySteps[index]
+            local value = values[index]
+            button:SetText(value and ("%d  %s · %s"):format(index, title, value) or ("%d  %s"):format(index, title))
+            button:SetShown(not raw or index >= 4)
+            button:SetPoint("TOPLEFT", 24, -(111 + (index - (raw and 4 or 1)) * 26))
+            button:SetEnabled(index == 1 or index == step or raw or advanced or picked == true)
+            if index == step then button:LockHighlight() else button:UnlockHighlight() end
+        end
+    end
+
     refresh = function()
         if not editor then return end
         local strings, draft = studio.GetStrings(), editor.Get()
@@ -534,12 +598,12 @@ function studio.CreateWizard(parent, showLibrary)
         nextStep:SetText(strings.nextStep)
         nextStep:SetEnabled(step < 5 and (step ~= 1 or advanced or picked == true))
         feedback:SetText(message and strings[message] or "")
+        renderSummary(strings, raw, branch, group, branchCount, picked)
         outline:SetShown(advanced and not raw)
         groupPanel:SetShown(advanced and not raw and (step == 2 or step == 3))
         guidePanel:SetShown(raw or not advanced)
         guideTitle:SetText(step == 4 and guide.behavior or guide.howTo)
         guideText:SetText(step == 4 and describeMacro(draft.body, strings) or guide.lessons[step])
-        guideSelection:SetText(step == 1 and (picked and guide.ready:format(W.SafeText(argument.token)) or guide.choose) or "")
         showAdvanced:SetShown(not raw)
         showAdvanced:SetText(advanced and guide.simple or guide.advanced)
         for index, page in ipairs(steps) do page:SetShown(index == step) end
@@ -550,11 +614,6 @@ function studio.CreateWizard(parent, showLibrary)
                 selectedLine, lineCount, true)
             branchNav.Render(strings.branchNav:format(branchCount > 0 and selectedBranch or 0, branchCount),
                 selectedBranch, branchCount, line ~= nil)
-            local label = argument and argument.token or ""
-            if argument and argument.kind == "spell" and argument.id then
-                label = Catalog.SpellName(argument.id) or strings.spellMissing:format(argument.token)
-            end
-            activeAction:SetText(strings.selectedAction .. W.SafeText(label ~= "" and label or strings.noAction))
             tooltip:SetText(strings.toggleTooltip)
         end
         if step == 1 then
@@ -598,19 +657,11 @@ function studio.CreateWizard(parent, showLibrary)
 
     function view.Start(draft, raw, starter)
         editor = Editor.Open(draft, raw, studio.client.locale, starter)
-        step = (editor.Get().body.mode == "raw" or starter and starter.action) and 4 or 1
-        selectedLine = 1
-        advanced = false
-        local actions = 0
-        for index, line in ipairs(editor.Get().body.lines or {}) do
-            if line.command then
-                if actions == 0 then selectedLine = index end
-                actions = actions + 1
-            end
-            if #line.branches > 1 then advanced = true end
-        end
-        advanced = not starter and (advanced or actions > 1)
-        selectedBranch, selectedGroup, category, message = 1, 1, "spell", nil
+        local body = editor.Get().body
+        step = (body.mode == "raw" or starter and starter.action) and 4 or 1
+        local complex = selectFirstAction(body)
+        advanced = not starter and complex
+        category, message = "spell", nil
         catalogPager.page = 1
         W.SetText(catalogFilter, "")
         frame:Show()

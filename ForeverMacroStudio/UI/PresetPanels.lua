@@ -20,7 +20,7 @@ local function createCards(panel, start, refresh)
     local page = { index = 1 }
     local cards = {}
     for index = 1, 2 do
-        local y = 162 + (index - 1) * 116
+        local y = 176 + (index - 1) * 110
         cards[index] = {
             button = W.Button(panel, 472, y, 260, function(self)
                 if self.starter then start(self.starter) end
@@ -73,13 +73,13 @@ end
 function studio.CreateClassPresets(panel, start)
     local selected, renderedClass
     local view = {}
-    local heading = W.Label(panel, 472, 42, 260, true)
-    local selector = W.Label(panel, 512, 78, 180)
+    local heading = W.Label(panel, 472, 76, 260, true)
+    local selector = W.Label(panel, 512, 111, 180)
     selector:SetJustifyH("CENTER")
-    local status = W.Label(panel, 472, 112, 258)
+    local status = W.Label(panel, 472, 143, 258)
     local function refresh() view.Render(studio.GetStrings().guide) end
     local page = createCards(panel, start, refresh)
-    local previous, following = arrows(panel, 73, function(delta)
+    local previous, following = arrows(panel, 106, function(delta)
         selected, page.index = selected + delta, 1
         refresh()
     end)
@@ -125,8 +125,8 @@ end
 
 function studio.CreateProfessionPresets(panel, start)
     local view = {}
-    local heading = W.Label(panel, 472, 42, 260, true)
-    local intro = W.Label(panel, 472, 78, 258)
+    local heading = W.Label(panel, 472, 76, 260, true)
+    local intro = W.Label(panel, 472, 106, 258)
     local page = createCards(panel, start, function() view.Render(studio.GetStrings().guide) end)
 
     function view.Render(guide)

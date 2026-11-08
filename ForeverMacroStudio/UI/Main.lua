@@ -33,6 +33,10 @@ local function createWindow()
     local paste = W.Button(libraryPanel, 215, 70, 150, function() start(nil, true) end)
     local count = W.Label(libraryPanel, 24, 380, 420)
     local hint = W.Label(libraryPanel, 24, 405, 420)
+    local divider = libraryPanel:CreateTexture(nil, "ARTWORK")
+    divider:SetPoint("TOPLEFT", 455, -42)
+    divider:SetSize(1, 423)
+    divider:SetColorTexture(0.85, 0.76, 0.54, 0.22)
     local sidePanels = {}
     local sidePage = studio.library.issue and "diagnostics" or "examples"
     for _, page in ipairs({ "examples", "classPresets", "professions", "diagnostics" }) do
@@ -40,14 +44,14 @@ local function createWindow()
         panel:SetAllPoints(libraryPanel)
         sidePanels[page] = panel
     end
-    local diagnostics = W.Label(sidePanels.diagnostics, 472, 42, 262, true)
-    local status = W.Label(sidePanels.diagnostics, 472, 71, 258)
+    local diagnostics = W.Label(sidePanels.diagnostics, 472, 76, 262, true)
+    local status = W.Label(sidePanels.diagnostics, 472, 106, 258)
     status:SetSpacing(4)
-    local guideHeading = W.Label(sidePanels.examples, 472, 42, 258, true)
-    local guideIntro = W.Label(sidePanels.examples, 472, 71, 258)
+    local guideHeading = W.Label(sidePanels.examples, 472, 76, 258, true)
+    local guideIntro = W.Label(sidePanels.examples, 472, 106, 258)
     local examples = {}
     for index, pattern in ipairs({ "self", "mouseover", "shift" }) do
-        local y = 144 + (index - 1) * 84
+        local y = 174 + (index - 1) * 84
         examples[pattern] = {
             button = W.Button(sidePanels.examples, 472, y, 260, function()
                 start(nil, false, { pattern = pattern })
@@ -62,10 +66,11 @@ local function createWindow()
     local professionPresets = studio.CreateProfessionPresets(sidePanels.professions, startPreset)
     local sideTabs = {}
     for _, tab in ipairs({
-        { "examples", 410, 70 }, { "classPresets", 484, 105 }, { "professions", 593, 66 }, { "diagnostics", 663, 72 },
+        { "examples", 472, 39, 66 }, { "classPresets", 542, 39, 112 }, { "professions", 658, 39, 76 },
+        { "diagnostics", 621, 485, 113 },
     }) do
         local page = tab[1]
-        sideTabs[page] = W.Button(libraryPanel, tab[2], 485, tab[3], function()
+        sideTabs[page] = W.Button(libraryPanel, tab[2], tab[3], tab[4], function()
             sidePage = page
             render()
         end)

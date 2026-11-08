@@ -4,7 +4,7 @@ Vizuální tvorba a správa maker pro World of Warcraft: Forever. E04 přidává
 
 Složku `ForeverMacroStudio` vlož do `World of Warcraft/_forever_/Interface/AddOns/`. Po spuštění hry otevři panel příkazem `/fms`. Tlačítkem jazyka přepneš mezi automatikou, češtinou a angličtinou. Po `/reload` znovu otevři panel a zkontroluj uložený jazyk. Příkaz `/fms debug` vypíše profil klienta i do chatu.
 
-V knihovně zvol **Vytvořit makro**. Vyber kouzlo z knihy, předmět z batohu nebo slot tretky. V dalších krocích vyber cíl a podmínky. V náhledu ověř text a délku, potom návrh ulož. Tlačítko **Označit text makra** připraví text ke kopírování. Zkopíruj ho přes Ctrl+C nebo Cmd+C a vlož do herního editoru `/macro`. Po `/reload` ověř, že návrh jde z knihovny znovu otevřít.
+V knihovně zvol **Vytvořit makro**. Vyber kouzlo z knihy, předmět z batohu nebo slot tretky. V dalších krocích vyber cíl a podmínky. Vlevo uvidíš **Přehled návrhu** s aktuálním nastavením. Kliknutím na řádek se můžeš vrátit přímo k příslušnému kroku. V náhledu ověř text a délku, potom návrh ulož. Tlačítko **Označit text makra** připraví text ke kopírování. Zkopíruj ho přes Ctrl+C nebo Cmd+C a vlož do herního editoru `/macro`. Po `/reload` ověř, že návrh jde z knihovny znovu otevřít.
 
 Pokud s makry začínáš, vpravo v knihovně najdeš **Příklady**. Zkus třeba **Kouzlo vždy na sebe** a vyber léčivé nebo obranné kouzlo, které lze použít na vlastní postavu. Záložka **Makra pro třídu** nabízí pět přednastavení pro každou z devíti tříd ve Forever. Horní šipky přepínají třídu, dolní listují makry. Některé dvojice používají jedno kouzlo při běžném stisku a druhé se Shiftem. Pokud máš kombinaci se Shiftem přiřazenou jiné akci, můžeš podržet Shift a kliknout na tlačítko na liště.
 
