@@ -39,3 +39,9 @@ Stav k 2026-11-09. Rozlišujeme implementaci, automatické testy a test ve hře.
 - UI05: statický náhled v posledním kroku přebírá ikonu vybraného kouzla.
 - UI06: škálování Ctrl+kolečko zachovává původní rozložení, není to plně responzivní systém.
 - **Neověřeno:** Lua 5.1 testy, CI běh a skutečné zobrazení v klientu.
+
+## UI01/UI06 – dokončení implementace (2026-11-09)
+- UI01: katalog je nyní skutečná dvousloupcová mřížka šesti grafických karet na stránku, se jménem a ikonou kouzla/předmětu (pokud ji klient poskytuje); zbývá pouze ověření ve hře.
+- UI06: okno lze přesouvat a měnit jeho měřítko tažením pravého dolního rohu; reaguje také na změnu rozlišení a UI měřítka. Vnitřní rozložení používá pevné souřadnice a adaptivní měřítko, nikoli přeskupení sloupců.
+- Bez klienta WoW nelze potvrdit funkčnost vykreslení ani kompatibilitu s konkrétní verzí Forever.
+- Před vydáním ověřit Lua 5.1 syntax, GitHub Actions a ve hře klikání na karty, stránkování, změnu měřítka a drag.
