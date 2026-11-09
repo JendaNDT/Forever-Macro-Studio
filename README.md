@@ -29,3 +29,15 @@ Pro zkoušky klienta nainstaluj do stejné složky `ForeverMacroStudioProbe`. P�
 Z kořene projektu spusť `lua5.1 tests/probe.lua` pro test sondy, `lua5.1 tests/storage.lua` pro test úložiště, `lua5.1 tests/compiler.lua` pro test kompilátoru a `lua5.1 tests/editor.lua` pro průchod editorem v simulovaném klientu.
 
 Studio používá písmo [Source Sans 3 od Adobe](https://github.com/adobe-fonts/source-sans/tree/3.052R) s [licencí SIL Open Font License](ForeverMacroStudio/Fonts/OFL.md).
+
+
+## Instalace a automatické kontroly (E07)
+1. Na stránce [GitHub Actions](https://github.com/JendaNDT/Forever-Macro-Studio/actions) otevři úspěšný běh „Lua tests and addon package“.
+2. Dole v části **Artifacts** stáhni `ForeverMacroStudio-addon`. Rozbal stažený archiv; uvnitř je `ForeverMacroStudio.zip`.
+3. Rozbal `ForeverMacroStudio.zip` do `World of Warcraft/_forever_/Interface/AddOns/`, aby vznikla složka `ForeverMacroStudio` s `ForeverMacroStudio.toc` přímo uvnitř.
+4. Před aktualizací si zálohuj `WTF/Account/` (uložené návrhy jsou v SavedVariables). Neodstraňuj vlastní data.
+5. V cílovém klientu zapni addon a otevři `/fms`. Bez herního ověření nejde instalaci označit za otestovanou.
+
+Workflow `.github/workflows/ci.yml` spouští testy `tests/*.lua` v Lua 5.1, ověřuje syntaxi Lua souborů a **jen při úspěchu** vytvoří instalační ZIP. Stažení je dostupné až po dokončení úspěšného běhu. ZIP není automaticky publikovaný jako GitHub Release.
+
+**E06:** V pátém kroku průvodce lze zobrazit bezpečnostní náhled exportu a opakovat kontrolu. Přímé vytváření či přepis maker ve hře je záměrně vypnuté, dokud neproběhnou zbývající testy kompatibility.
