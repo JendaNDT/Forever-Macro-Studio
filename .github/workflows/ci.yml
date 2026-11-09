@@ -1,0 +1,45 @@
+name: Lua tests and addon package
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1 and zip
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1 zip
+      - name: Run all Lua tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(tests/*.lua)
+          if (( ${#tests[@]} == 0 )); then echo "No tests found"; exit 1; fi
+          for file in "${tests[@]}"; do
+            echo "Running $file"
+            lua5.1 "$file"
+          done
+      - name: Validate Lua syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do luac5.1 -p "$file"; done < <(find ForeverMacroStudio ForeverMacroStudioProbe -name '*.lua' -print0)
+      - name: Package addon
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          zip -qr dist/ForeverMacroStudio.zip ForeverMacroStudio
+          unzip -l dist/ForeverMacroStudio.zip | grep -q 'ForeverMacroStudio/ForeverMacroStudio.toc'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ForeverMacroStudio-addon
+          path: dist/ForeverMacroStudio.zip
+          if-no-files-found: error
