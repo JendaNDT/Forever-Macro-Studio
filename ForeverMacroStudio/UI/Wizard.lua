@@ -383,7 +383,8 @@ function studio.CreateWizard(parent, showLibrary)
     end
     local catalogPager = W.CatalogCards(steps[1], 266, 175, 470, function() refresh() end, choose)
     local catalogColumns = 2
-    local catalogLayout = W.Button(steps[1], 266, 412, 205, function()
+    local catalogLayout
+    catalogLayout = W.Button(steps[1], 266, 412, 205, function()
         catalogColumns = catalogColumns == 2 and 1 or 2
         catalogLayout:SetText(catalogColumns == 1 and "1 sloupec" or "2 sloupce")
         catalogPager.SetColumns(catalogColumns)
