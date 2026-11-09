@@ -166,6 +166,46 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
     return pager
 end
 
+-- Reflow anchored controls between wide and stacked layouts.
+-- Original anchors are retained so switching modes never accumulates offsets.
+local originalAnchors = setmetatable({}, { __mode = "k" })
+function Widgets.Reflow(root, compact, kind)
+    local function visit(container)
+        local function reposition(region)
+            if not region.GetNumPoints or region:GetNumPoints() ~= 1 then return end
+            local point, relative, relativePoint, x, y = region:GetPoint(1)
+            if point ~= "TOPLEFT" or relative ~= container or type(x) ~= "number" or type(y) ~= "number" then return end
+            local base = originalAnchors[region]
+            if not base then
+                base = { x = x, y = y }
+                originalAnchors[region] = base
+            end
+            local nx, ny = base.x, base.y
+            if compact then
+                if kind == "wizard" then
+                    if base.y <= -80 and base.x >= 250 then nx, ny = base.x - 242, base.y - 430 end
+                    if base.y <= -480 and base.x < 250 then ny = base.y - 430 end
+                    if base.x < 250 and base.y <= -455 and base.y > -480 then ny = base.y - 430 end
+                elseif kind == "library" then
+                    if base.x >= 455 then nx, ny = base.x - 448, base.y - 430 end
+                    if base.y <= -480 and base.x < 455 then ny = base.y - 430 end
+                end
+            end
+            if nx ~= x or ny ~= y then
+                region:ClearAllPoints()
+                region:SetPoint("TOPLEFT", container, "TOPLEFT", nx, ny)
+            end
+        end
+        local regions = { container:GetRegions() }
+        for _, region in ipairs(regions) do reposition(region) end
+        local children = { container:GetChildren() }
+        for _, child in ipairs(children) do
+            reposition(child)
+            visit(child)
+        end
+    end
+    visit(root)
+end
 function Widgets.Pager(parent, x, y, width, rowCount, refresh, choose, sideActions)
     local pager = { page = 1 }
     local rows, actions = {}, {}
