@@ -216,7 +216,7 @@ local function createWindow()
             if characterFilter then characterToggle:LockHighlight() else characterToggle:UnlockHighlight() end
             archiveToggle:SetText(archived and strings.activeDrafts or strings.archivedDrafts)
             if archived then archiveToggle:LockHighlight() else archiveToggle:UnlockHighlight() end
-            count:SetText(strings.storedDrafts:format(studio.library.Count()))
+            count:SetText(strings.storedDrafts:format(studio.library.Count()) .. "  (" .. #entries .. ")")
             hint:SetText(archiveMessage and strings[archiveMessage] or #entries > 0 and strings.openDraft
                 or (query ~= "" or characterFilter) and strings.noSearchResults
                 or archived and strings.archiveEmpty or strings.libraryEmpty)
