@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Forever Macro Studio
 ## Notes: Build and manage macros for World of Warcraft: Forever.
-## Version: 0.4.6
+## Version: 0.4.7
 ## SavedVariables: ForeverMacroStudioDB
 
 Locale/Strings.lua

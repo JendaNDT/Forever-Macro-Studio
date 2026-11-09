@@ -4,6 +4,7 @@ local closeDialog = "FOREVER_MACRO_STUDIO_UNSAVED"
 local rawDialog = "FOREVER_MACRO_STUDIO_RAW"
 local targetChoices = { "", "target", "player", "mouseover" }
 local conditions = { "help", "harm", "exists", "nodead", "mod:shift", "mod:ctrl", "mod:alt" }
+local fallbackIcon = "Interface\\Icons\\INV_Misc_QuestionMark"
 
 local function cap(index, count)
     return math.max(1, math.min(index, count))
@@ -356,9 +357,10 @@ function studio.CreateWizard(parent, showLibrary)
     local catalogFilter = W.Box(steps[1], 416, 144, 318, 24)
     local selectionIcon = steps[1]:CreateTexture(nil, "ARTWORK")
     selectionIcon:SetPoint("TOPLEFT", steps[1], "TOPLEFT", 266, -385)
-    selectionIcon:SetSize(38, 38)
-    selectionIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
-    local selectionName = W.Label(steps[1], 314, 394, 415)
+    selectionIcon:SetSize(25, 25)
+    local selectionName = W.Label(steps[1], 301, 390, 427)
+    selectionName:SetMaxLines(1)
+    selectionName:SetWordWrap(false)
     local catalogStatus = W.Label(steps[1], 266, 432, 466)
     local function choose(entry)
         local line, branch, _, count = current()
@@ -383,10 +385,8 @@ function studio.CreateWizard(parent, showLibrary)
     end
     local catalogPager = W.CatalogCards(steps[1], 266, 175, 470, function() refresh() end, choose)
     local catalogColumns = 2
-    local catalogLayout
-    catalogLayout = W.Button(steps[1], 266, 412, 205, function()
+    local catalogLayout = W.Button(steps[1], 266, 412, 205, function()
         catalogColumns = catalogColumns == 2 and 1 or 2
-        catalogLayout:SetText(catalogColumns == 1 and "1 sloupec" or "2 sloupce")
         catalogPager.SetColumns(catalogColumns)
     end)
     for index, kind in ipairs({ "spell", "item", "slot" }) do
@@ -559,7 +559,6 @@ function studio.CreateWizard(parent, showLibrary)
     local actionIcon = steps[5]:CreateTexture(nil, "ARTWORK")
     actionIcon:SetPoint("TOPLEFT", steps[5], "TOPLEFT", 266, -360)
     actionIcon:SetSize(38, 38)
-    actionIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     local actionCaption = W.Label(steps[5], 314, 368, 405)
     -- Read-only confirmation; no CreateMacro/EditMacro calls.
     local exportScope = "account"
@@ -582,7 +581,7 @@ function studio.CreateWizard(parent, showLibrary)
         StaticPopupDialogs["FMS_EXPORT_PREVIEW"] = {
             text = strings.exportPreviewText:format(
                 selectedScope == "account" and strings.accountMacros or strings.characterMacros,
-                W.SafeText(preview.name), W.SafeText(preview.text),
+                W.SafeText(preview.name), (preview.text:gsub("|", "||")),
                 preview.bytes, preview.count, preview.capacity),
             button1 = strings.exportRecheck, button2 = strings.cancel,
             OnShow = studio.ApplyPopupTypeface, OnHide = studio.RestorePopupTypeface,
@@ -605,6 +604,7 @@ function studio.CreateWizard(parent, showLibrary)
             if kind == category then button:LockHighlight() else button:UnlockHighlight() end
         end
         catalogFilterLabel:SetText(strings.search)
+        catalogLayout:SetText(strings.catalogColumns[catalogColumns])
         local entries, state
         if category == "slot" then
             entries = {
@@ -624,15 +624,8 @@ function studio.CreateWizard(parent, showLibrary)
             return entry.id == argument.id
         end)
         catalogStatus:SetText(state and strings[state] or #results == 0 and strings.catalogEmpty or "")
-        selectionIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+        selectionIcon:SetTexture(Catalog.ActionIcon(argument) or fallbackIcon)
         selectionName:SetText(argument and W.SafeText(actionName(argument, strings) or strings.noAction) or strings.noAction)
-        if argument and argument.kind == "spell" and type(argument.id) == "number"
-            and C_Spell and type(C_Spell.GetSpellTexture) == "function" then
-            local ok, texture = pcall(C_Spell.GetSpellTexture, argument.id)
-            if ok and (type(texture) == "number" or type(texture) == "string") then
-                selectionIcon:SetTexture(texture)
-            end
-        end
     end
 
     local function renderPreview(strings, draft, preview)
@@ -666,7 +659,6 @@ function studio.CreateWizard(parent, showLibrary)
             detail = prefix .. location .. (strings.diagnostic[issue.reason or issue.code] or issue.code)
         end
         issueCount:SetText(total > 0 and strings.issueCount:format(issueIndex, total) or "")
-        issueCount:SetPoint("TOPLEFT", total > 1 and 337 or 266, -264)
         previousIssue:SetShown(total > 1)
         nextIssue:SetShown(total > 1)
         previousIssue:SetEnabled(issueIndex > 1)
@@ -699,6 +691,25 @@ function studio.CreateWizard(parent, showLibrary)
             button:SetEnabled(index == 1 or index == step or raw or advanced or picked == true)
             if index == step then button:LockHighlight() else button:UnlockHighlight() end
         end
+    end
+
+    local function renderSave(strings, draft, preview, argument)
+        saveDescription:SetText(studio.library.issue and strings.storageInvalid
+            or preview.canCopy and strings.guide.lessons[5] or strings.saveIncomplete)
+        local character = studio.GetCharacterName()
+        local assigned = draft.character and W.SafeText(draft.character) or strings.unassignedCharacter
+        draftCharacter:SetText(strings.draftCharacter:format(assigned))
+        assignCharacter:SetText(character and draft.character == character
+            and strings.clearCharacter or strings.assignCharacter)
+        assignCharacter:SetEnabled(character ~= nil and not studio.library.issue)
+        saveButton:SetText(strings.saveDraft)
+        saveButton:SetEnabled(not studio.library.issue)
+        scopeToggle:SetText(exportScope == "account" and strings.accountMacros or strings.characterMacros)
+        exportPreview:SetText(strings.exportPreviewButton)
+        exportPreview:SetEnabled(preview.canCopy)
+        exportHint:SetText(strings.exportReadOnly)
+        actionCaption:SetText(W.SafeText(draft.title ~= "" and draft.title or strings.untitledDraft))
+        actionIcon:SetTexture(Catalog.ActionIcon(argument) or fallbackIcon)
     end
 
     refresh = function()
@@ -795,22 +806,7 @@ function studio.CreateWizard(parent, showLibrary)
                     renderPreview(strings, draft, preview)
                 end
             else
-                saveDescription:SetText(studio.library.issue and strings.storageInvalid
-                    or preview.canCopy and guide.lessons[5] or strings.saveIncomplete)
-                local character = studio.GetCharacterName()
-                local assigned = draft.character and W.SafeText(draft.character) or strings.unassignedCharacter
-                draftCharacter:SetText(strings.draftCharacter:format(assigned))
-                assignCharacter:SetText(character and draft.character == character
-                    and strings.clearCharacter or strings.assignCharacter)
-                assignCharacter:SetEnabled(character ~= nil and not studio.library.issue)
-                saveButton:SetText(strings.saveDraft)
-                saveButton:SetEnabled(not studio.library.issue)
-                scopeToggle:SetText(exportScope == "account" and strings.accountMacros or strings.characterMacros)
-                exportPreview:SetText(strings.exportPreviewButton)
-                exportPreview:SetEnabled(preview.canCopy)
-                exportHint:SetText(strings.exportReadOnly)
-                actionCaption:SetText(W.SafeText(draft.title ~= "" and draft.title or strings.untitledDraft))
-                actionIcon:SetTexture(selectionIcon:GetTexture() or "Interface\\Icons\\INV_Misc_QuestionMark")
+                renderSave(strings, draft, preview, argument)
             end
         end
     end
@@ -827,14 +823,16 @@ function studio.CreateWizard(parent, showLibrary)
         conversionIssue = options and options.conversionIssue
         category, message = "spell", conversionIssue and "convertFailed" or nil
         catalogPager.page = 1
-        catalogLayout:SetText(catalogColumns == 1 and "1 sloupec" or "2 sloupce")
         W.SetText(catalogFilter, "")
         frame:Show()
         refresh()
         if raw and not draft then textBox:SetFocus() end
     end
 
+    local compactLayout
     function view.SetCompact(compact)
+        if compactLayout == compact then return end
+        compactLayout = compact
         W.Reflow(frame, compact, "wizard")
         title:SetWidth(compact and 166 or 356)
         undo:ClearAllPoints()
@@ -844,7 +842,6 @@ function studio.CreateWizard(parent, showLibrary)
         local desired = compact and 1 or 2
         if catalogColumns ~= desired then
             catalogColumns = desired
-            catalogLayout:SetText(desired == 1 and "1 sloupec" or "2 sloupce")
             catalogPager.SetColumns(desired)
         end
     end

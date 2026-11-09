@@ -9,10 +9,22 @@ function methods:RegisterEvent(event) self.events[event] = true end
 function methods:UnregisterEvent(event) self.events[event] = nil end
 function methods:GetName() return self.name end
 function methods:SetPoint(...) self.point = { ... } end
+function methods:ClearAllPoints() self.point = nil end
+function methods:GetNumPoints() return self.point and 1 or 0 end
+function methods:GetPoint()
+    local anchor, relative, relativePoint, x, y = unpack(self.point)
+    if type(relative) == "number" then return anchor, self.parent, anchor, relative, relativePoint end
+    return anchor, relative, relativePoint, x, y
+end
 function methods:SetSize(width, height) self.width, self.height = width, height end
 function methods:SetWidth(width) self.width = width end
+function methods:SetHeight(height) self.height = height end
 function methods:GetWidth() return self.width end
 function methods:GetHeight() return self.height end
+function methods:SetScale(scale) self.scale = scale end
+function methods:SetTexture(texture) self.texture = texture end
+function methods:GetTexture() return self.texture end
+function methods:SetValue(value) self.value = value end
 function methods:GetFont() return self.font or "default.ttf", 12, "" end
 function methods:SetFont(path) self.font = path end
 function methods:SetFontObject(font) self.fontObject = font end
@@ -46,9 +58,21 @@ function methods:ClearFocus()
 end
 function methods:HighlightText(first, last) self.highlightedText = self.text:sub((first or 0) + 1, last) end
 function methods:SetScrollChild(child) self.child = child end
+local function members(parent, regions)
+    local children = {}
+    for _, frame in ipairs(frames) do
+        local isRegion = frame.kind == "FontString" or frame.kind == "Texture"
+        if frame.parent == parent and isRegion == regions then children[#children + 1] = frame end
+    end
+    return unpack(children)
+end
+function methods:GetRegions() return members(self, true) end
+function methods:GetChildren() return members(self, false) end
 for _, name in ipairs({
-    "SetAllPoints", "SetFrameStrata", "SetScale", "SetJustifyH", "SetSpacing", "SetWordWrap",
+    "SetAllPoints", "SetFrameStrata", "SetJustifyH", "SetSpacing", "SetWordWrap",
     "SetMaxLines", "SetMultiLine", "SetAutoFocus", "SetTextInsets", "SetTextColor", "SetCursorPosition", "SetColorTexture",
+    "SetStatusBarTexture", "SetStatusBarColor", "SetMinMaxValues", "SetMovable", "EnableMouse", "RegisterForDrag",
+    "SetNormalTexture", "SetHighlightTexture", "SetPushedTexture", "EnableMouseWheel",
 }) do
     methods[name] = function() end
 end
@@ -199,7 +223,9 @@ local function click(label)
 end
 local function buttonAt(label, x, y)
     return assert(visible("Button", function(frame)
-        return frame.text == label and frame.point and frame.point[2] == x and frame.point[3] == -y
+        if frame.text ~= label or not frame.point then return false end
+        local _, _, _, left, top = frame:GetPoint()
+        return left == x and top == -y
     end))
 end
 local function clickAt(label, x, y)
@@ -212,7 +238,9 @@ local function label(text)
 end
 local function editAt(x, y)
     return assert(visible("EditBox", function(frame)
-        return frame.point and frame.point[2] == x and frame.point[3] == -y
+        if not frame.point then return false end
+        local _, _, _, left, top = frame:GetPoint()
+        return left == x and top == -y
     end))
 end
 local function enter(edit, value)
@@ -225,9 +253,44 @@ local function rawBox()
 end
 
 local fms = SlashCmdList.FOREVER_MACRO_STUDIO
+local function offset(frame)
+    local _, _, _, x, y = frame:GetPoint()
+    return x, -y
+end
+local function resize(width, height)
+    UIParent:SetSize(width, height)
+    for _, frame in ipairs(frames) do
+        if frame.events.DISPLAY_SIZE_CHANGED then frame:OnEvent("DISPLAY_SIZE_CHANGED") end
+    end
+end
 fms("")
 assert(button("Examples").highlight)
+local window = globals.ForeverMacroStudioFrame
+resize(900, 700)
+assert(window.width == 550 and window.height == 970 and window.scale * window.height < 700)
+local languageX, languageY = offset(button("Language: Automatic"))
+local diagnosticsX, diagnosticsY = offset(button(studio.strings.enUS.guide.diagnostics))
+assert(languageY == diagnosticsY and languageX + button("Language: Automatic").width < diagnosticsX)
+resize(1200, 900)
+assert(window.width == 760 and window.height == 530 and window.scale == 1)
 click("Create macro")
+local firstCard, secondCard = button("Banish"), button("Corruption")
+local catalog = firstCard.parent
+local firstX, firstY = offset(firstCard)
+local secondX, secondY = offset(secondCard)
+assert(firstX < secondX and firstY == secondY and offset(catalog) == 266)
+resize(900, 700)
+assert(button("1 column") and offset(catalog) == 24)
+secondX, secondY = offset(secondCard)
+assert(secondX == firstX and secondY == firstY + 30)
+assert(offset(secondCard) + secondCard.width + offset(catalog) <= window.width)
+click("1 column")
+assert(button("2 columns") and offset(secondCard) > firstX)
+resize(920, 700)
+assert(button("2 columns") and offset(catalog) == 24)
+click("2 columns")
+resize(1200, 900)
+assert(button("2 columns") and offset(catalog) == 266 and offset(secondCard) > firstX)
 assert(not button("Next").enabled)
 assert(button("1  Action · Choose an action").highlight)
 assert(not button("2  Target · Default targeting").enabled)
@@ -267,10 +330,23 @@ click("Select macro text")
 assert(rawBox().highlightedText == expected)
 click("5  Save")
 assert(not label(studio.strings.enUS.guide.transfer))
+click("Check export to WoW")
+assert(popup.text:find("Account macros", 1, true) and popup.text:find(expected, 1, true))
+respond("OnAccept")
+assert(label(studio.strings.enUS.exportReady))
+click("Account macros")
+click("Check export to WoW")
+assert(popup.text:find("Character macros", 1, true))
+respond("OnAccept")
 click("Save draft")
 assert(studio.library.Count() == 1)
 assert(studio.library.Get("draft-1").revision == 1)
 click("Draft library")
+clickAt("+", 236, 137)
+assert(ForeverMacroStudioDB.preferences.favorites["draft-1"])
+click("Favorites only")
+assert(button("Sebeobnova") and button("*"))
+click("All drafts")
 
 click("Sebeobnova")
 for _ = 1, 3 do click("Next") end
@@ -513,13 +589,13 @@ click("Knihovna návrhů")
 assert(popup.text == "Uložit změny návrhu?" and popup.button2 == "Pokračovat v úpravách")
 respond("OnAlt")
 
-clickAt("Upravit kopii", 239, 137)
+clickAt("Upravit kopii", 277, 137)
 assert(editAt(174, 43):GetText() == "Kopie – Sebeobnova")
 assert(studio.library.Count() == 3)
 click("Knihovna návrhů")
 respond("OnAlt")
 assert(studio.library.Count() == 3)
-clickAt("Upravit kopii", 239, 137)
+clickAt("Upravit kopii", 277, 137)
 click("2  Cíl · Sebe")
 click("Aktuální cíl")
 click("5  Uložení")
@@ -531,7 +607,7 @@ assert(copied.title == "Kopie – Sebeobnova" and copied.revision == 1)
 assert(copied.body.lines[2].branches[1].groups[1].unit == "target")
 
 click("Knihovna návrhů")
-clickAt("Archivovat", 353, 137)
+clickAt("Archivovat", 366, 137)
 assert(studio.library.Get("draft-1").archived)
 assert(not visible("Button", function(frame) return frame.text == "Sebeobnova" end))
 click("Zobrazit archiv")

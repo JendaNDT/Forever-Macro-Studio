@@ -78,6 +78,9 @@ end
 
 -- Two-column visual catalog; 6 entries per page, with icons and keyboard-friendly buttons.
 function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
+    local panel = CreateFrame("Frame", nil, parent)
+    panel:SetPoint("TOPLEFT", x, -y)
+    panel:SetSize(width, 209)
     local pager = { page = 1 }
     local rows = {}
     local cardWidth = math.floor((width - 10) / 2)
@@ -85,7 +88,7 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
     for index = 1, 6 do
         local col = (index - 1) % 2
         local row = math.floor((index - 1) / 2)
-        local button = Widgets.Button(parent, x + col * (cardWidth + 10), y + row * 60, cardWidth,
+        local button = Widgets.Button(panel, col * (cardWidth + 10), row * 60, cardWidth,
             function(self) if self.entry then choose(self.entry) end end)
         button:SetHeight(54)
         local label = button:GetFontString()
@@ -100,18 +103,18 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
         icon:SetSize(36, 36)
         rows[index] = { button = button, icon = icon }
     end
-    local navY = y + 185
-    local previous = Widgets.Button(parent, x, navY, 36, function()
+    local navY = 185
+    local previous = Widgets.Button(panel, 0, navY, 36, function()
         pager.page = pager.page - 1
         refresh()
     end)
-    local nextPage = Widgets.Button(parent, x + width - 36, navY, 36, function()
+    local nextPage = Widgets.Button(panel, width - 36, navY, 36, function()
         pager.page = pager.page + 1
         refresh()
     end)
     previous:SetText("<")
     nextPage:SetText(">")
-    local indicator = Widgets.Label(parent, x + 46, navY + 4, width - 92)
+    local indicator = Widgets.Label(panel, 46, navY + 4, width - 92)
     indicator:SetJustifyH("CENTER")
 
     function pager.SetColumns(value)
@@ -121,9 +124,9 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
             local col = (index - 1) % columns
             local line = math.floor((index - 1) / columns)
             card.button:ClearAllPoints()
-            card.button:SetPoint("TOPLEFT", parent, "TOPLEFT", x + col * (cardWidth + 10), -(y + line * (columns == 1 and 30 or 60)))
+            card.button:SetPoint("TOPLEFT", panel, "TOPLEFT", col * (cardWidth + 10), -line * (columns == 1 and 30 or 60))
             card.button:SetSize(cardWidth, columns == 1 and 28 or 54)
-            card.button:GetFontString():SetWidth(cardWidth - (columns == 1 and 42 or 56))
+            card.button:GetFontString():SetWidth(cardWidth - 56)
             card.icon:SetSize(columns == 1 and 22 or 36, columns == 1 and 22 or 36)
         end
         pager.page = 1
@@ -140,17 +143,7 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
             card.button:SetShown(entry ~= nil)
             if entry then
                 card.button:SetText(Widgets.SafeText(label(entry)))
-                local texture = entry.icon
-                if entry.kind == "spell" and type(entry.id) == "number"
-                    and C_Spell and type(C_Spell.GetSpellTexture) == "function" then
-                    local ok, result = pcall(C_Spell.GetSpellTexture, entry.id)
-                    if ok and (type(result) == "number" or type(result) == "string") then texture = result end
-                elseif entry.kind == "item" and type(entry.id) == "number"
-                    and C_Item and type(C_Item.GetItemIconByID) == "function" then
-                    local ok, result = pcall(C_Item.GetItemIconByID, entry.id)
-                    if ok and (type(result) == "number" or type(result) == "string") then texture = result end
-                end
-                card.icon:SetTexture(texture or fallback)
+                card.icon:SetTexture(studio.Catalog.ActionIcon(entry) or fallback)
                 if selected and selected(entry) then card.button:LockHighlight()
                 else card.button:UnlockHighlight() end
             end
@@ -187,21 +180,25 @@ function Widgets.Reflow(root, compact, kind)
                     if base.y <= -480 and base.x < 250 then ny = base.y - 430 end
                     if base.x < 250 and base.y <= -455 and base.y > -480 then ny = base.y - 430 end
                 elseif kind == "library" then
-                    if base.x >= 455 then nx, ny = base.x - 448, base.y - 430 end
-                    if base.y <= -480 and base.x < 455 then ny = base.y - 430 end
+                    if base.y <= -480 then
+                        nx, ny = base.x >= 455 and base.x - 300 or base.x, base.y - 450
+                    elseif base.x >= 455 then
+                        nx, ny = base.x - 448, base.y - 460
+                    end
                 end
             end
             if nx ~= x or ny ~= y then
                 region:ClearAllPoints()
                 region:SetPoint("TOPLEFT", container, "TOPLEFT", nx, ny)
             end
+            return true
         end
         local regions = { container:GetRegions() }
         for _, region in ipairs(regions) do reposition(region) end
         local children = { container:GetChildren() }
         for _, child in ipairs(children) do
-            reposition(child)
-            visit(child)
+            -- An anchored panel moves its own controls as a unit.
+            if not reposition(child) then visit(child) end
         end
     end
     visit(root)
