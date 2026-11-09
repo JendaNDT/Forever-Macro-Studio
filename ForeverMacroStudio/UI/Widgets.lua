@@ -75,6 +75,81 @@ function Widgets.Lower(text)
     return (text:lower():gsub("[\194-\223][\128-\191]", accented))
 end
 
+
+-- Two-column visual catalog; 6 entries per page, with icons and keyboard-friendly buttons.
+function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
+    local pager = { page = 1 }
+    local rows = {}
+    local cardWidth = math.floor((width - 10) / 2)
+    local fallback = "Interface\\Icons\\INV_Misc_QuestionMark"
+    for index = 1, 6 do
+        local col = (index - 1) % 2
+        local row = math.floor((index - 1) / 2)
+        local button = Widgets.Button(parent, x + col * (cardWidth + 10), y + row * 60, cardWidth,
+            function(self) if self.entry then choose(self.entry) end end)
+        button:SetHeight(54)
+        local label = button:GetFontString()
+        label:ClearAllPoints()
+        label:SetPoint("LEFT", button, "LEFT", 50, 0)
+        label:SetWidth(cardWidth - 56)
+        label:SetJustifyH("LEFT")
+        label:SetWordWrap(true)
+        label:SetMaxLines(2)
+        local icon = button:CreateTexture(nil, "ARTWORK")
+        icon:SetPoint("LEFT", button, "LEFT", 8, 0)
+        icon:SetSize(36, 36)
+        rows[index] = { button = button, icon = icon }
+    end
+    local navY = y + 185
+    local previous = Widgets.Button(parent, x, navY, 36, function()
+        pager.page = pager.page - 1
+        refresh()
+    end)
+    local nextPage = Widgets.Button(parent, x + width - 36, navY, 36, function()
+        pager.page = pager.page + 1
+        refresh()
+    end)
+    previous:SetText("<")
+    nextPage:SetText(">")
+    local indicator = Widgets.Label(parent, x + 46, navY + 4, width - 92)
+    indicator:SetJustifyH("CENTER")
+
+    function pager.Render(entries, label, selected)
+        local pages = math.max(1, math.ceil(#entries / 6))
+        pager.page = math.max(1, math.min(pager.page, pages))
+        local offset = (pager.page - 1) * 6
+        for index, card in ipairs(rows) do
+            local entry = entries[offset + index]
+            card.button.entry = entry
+            card.button:SetShown(entry ~= nil)
+            if entry then
+                card.button:SetText(Widgets.SafeText(label(entry)))
+                local texture = entry.icon
+                if entry.kind == "spell" and type(entry.id) == "number"
+                    and C_Spell and type(C_Spell.GetSpellTexture) == "function" then
+                    local ok, result = pcall(C_Spell.GetSpellTexture, entry.id)
+                    if ok and (type(result) == "number" or type(result) == "string") then texture = result end
+                elseif entry.kind == "item" and type(entry.id) == "number"
+                    and C_Item and type(C_Item.GetItemIconByID) == "function" then
+                    local ok, result = pcall(C_Item.GetItemIconByID, entry.id)
+                    if ok and (type(result) == "number" or type(result) == "string") then texture = result end
+                end
+                card.icon:SetTexture(texture or fallback)
+                if selected and selected(entry) then card.button:LockHighlight()
+                else card.button:UnlockHighlight() end
+            end
+        end
+        previous:SetEnabled(pager.page > 1)
+        nextPage:SetEnabled(pager.page < pages)
+        indicator:SetText(("%d / %d"):format(pager.page, pages))
+    end
+
+    function pager.ChooseFirst()
+        if rows[1].button.entry then choose(rows[1].button.entry) end
+    end
+    return pager
+end
+
 function Widgets.Pager(parent, x, y, width, rowCount, refresh, choose, sideActions)
     local pager = { page = 1 }
     local rows, actions = {}, {}
