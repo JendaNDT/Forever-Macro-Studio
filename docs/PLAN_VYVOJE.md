@@ -81,3 +81,12 @@ Při každé další práci aktualizovat:
 - Přidán `tests/export.lua` s modelovými scénáři. **Test zatím nebyl spuštěn; PASS nelze tvrdit.**
 - Zatím není připojeno uživatelské tlačítko, potvrzovací dialog ani bezpečná zapisovací vrstva. Nic se samo neukládá ani nepřepisuje.
 - **Další práce:** spustit Lua 5.1 testy, ověřit limity názvu a textu na reálném Forever klientu, navrhnout dvoufázové potvrzení s opětovným načtením stavu a kontrolou kolizí těsně před zápisem. Teprve po dokončení E00/E05 povolit zápis.
+
+
+## E06 pokračování – 2026-11-09
+- Commit `adcbd8b`: přidána `ConfirmPreview`, která opakuje bezpečnostní kontroly a odmítne změněný náhled. Zůstává výhradně pro čtení.
+- Commit `699afce`: rozšířeny modelové testy o potvrzení, změněný návrh a změnu obsazenosti slotů.
+- Commit `3479821`: v kroku 5 průvodce přidána volba účet/postava a potvrzovací náhled. Potvrzení **nezapisuje** do WoW.
+- **Testy nebyly spuštěny:** v dostupném prostředí není interpret Lua 5.1. Výsledek PASS se netvrdí.
+- **Zápis do herních maker není aktivní**; čeká na herní ověření E00/E05, zejména limity, boj a bezpečné řešení kolizí.
+- Před vydáním je nutná revize zobrazení dialogu a českých řetězců v cílovém klientu, provedení všech automatických testů a herní zkoušky.
