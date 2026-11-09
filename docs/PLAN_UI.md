@@ -24,3 +24,11 @@ Stav k 2026-11-09. Rozlišujeme implementaci, automatické testy a test ve hře.
 3. UI03: oblíbené návrhy bez rizika ztráty dat, rychlé akce.
 4. UI05: statický vzhled tlačítka.
 5. UI06: skutečně adaptivní rozložení a ověření malých obrazovek.
+
+## Pokračování implementace 2026-11-09
+- UI02: přidán kompaktní živý textový náhled do levého sloupce průvodce.
+- UI05: přidán statický obrázek tlačítka s univerzální ikonou a názvem návrhu. Ikona zatím není odvozena od skutečného kouzla.
+- UI06: přidáno měřítko celého okna přes Ctrl + kolečko myši; nejedná se o plně adaptivní rozložení.
+- UI01: existující výběr kouzel a kategorií zůstává tlačítkový, karty s ikonami nejsou implementovány.
+- UI03: existující vyhledávání a filtry plus počet výsledků; trvalé oblíbené položky nejsou implementovány.
+- Automatické ani herní testy těchto nových změn nebyly potvrzeny.
