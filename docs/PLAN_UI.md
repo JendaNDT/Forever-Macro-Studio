@@ -32,3 +32,10 @@ Stav k 2026-11-09. Rozlišujeme implementaci, automatické testy a test ve hře.
 - UI01: existující výběr kouzel a kategorií zůstává tlačítkový, karty s ikonami nejsou implementovány.
 - UI03: existující vyhledávání a filtry plus počet výsledků; trvalé oblíbené položky nejsou implementovány.
 - Automatické ani herní testy těchto nových změn nebyly potvrzeny.
+
+## Další úpravy 2026-11-09
+- UI01: přidána karta právě vybrané akce s ikonou kouzla, pokud ji klient bezpečně poskytuje; při nedostupnosti se zobrazí obecná ikona. Výběrový seznam zůstává tlačítkový.
+- UI03: hvězdička/plus u návrhů, oblíbené uložené v nastavení bez úprav samotných návrhů; filtr pouze oblíbených.
+- UI05: statický náhled v posledním kroku přebírá ikonu vybraného kouzla.
+- UI06: škálování Ctrl+kolečko zachovává původní rozložení, není to plně responzivní systém.
+- **Neověřeno:** Lua 5.1 testy, CI běh a skutečné zobrazení v klientu.
