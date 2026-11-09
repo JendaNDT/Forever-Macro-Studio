@@ -223,6 +223,13 @@ function studio.CreateWizard(parent, showLibrary)
     local undo = W.Button(frame, 544, 42, 94, function() editor.Undo(); message = nil; refresh() end)
     local redo = W.Button(frame, 644, 42, 94, function() editor.Redo(); message = nil; refresh() end)
     local stepTitle = W.Label(frame, 266, 85, 470, true)
+    local progress = CreateFrame("StatusBar", nil, frame)
+    progress:SetPoint("TOPLEFT", frame, "TOPLEFT", 266, -105)
+    progress:SetSize(466, 5)
+    progress:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+    progress:SetStatusBarColor(0.76, 0.64, 0.35)
+    progress:SetMinMaxValues(0, 5)
+    progress:SetValue(1)
     local feedback = W.Label(frame, 24, 459, 710)
 
     local function goTo(destination)
@@ -545,7 +552,8 @@ function studio.CreateWizard(parent, showLibrary)
         local draft = editor.Get()
         local preview, err = studio.MacroExport.Prepare(draft, exportScope, Catalog.SpellName)
         if not preview then
-            exportHint:SetText(studio.GetStrings().exportRejected:format(tostring(err)))
+            local labels = studio.GetStrings()
+            exportHint:SetText(labels.exportRejected:format(labels.exportErrors[err] or tostring(err)))
             return
         end
         local strings = studio.GetStrings()
@@ -561,7 +569,7 @@ function studio.CreateWizard(parent, showLibrary)
                 local current, reason = studio.MacroExport.ConfirmPreview(
                     preview, editor and editor.Get(), selectedScope, Catalog.SpellName)
                 exportHint:SetText(current and strings.exportReady
-                    or strings.exportRejected:format(tostring(reason)))
+                    or strings.exportRejected:format(strings.exportErrors[reason] or tostring(reason)))
             end,
             timeout = 0, whileDead = true, hideOnEscape = true,
         }
@@ -683,6 +691,7 @@ function studio.CreateWizard(parent, showLibrary)
         undo:SetEnabled(editor.CanUndo())
         redo:SetEnabled(editor.CanRedo())
         stepTitle:SetText(strings.stepTitle:format(step, guide.steps[step]))
+        progress:SetValue(step)
         back:SetText(strings.back)
         back:SetEnabled(step > (raw and 4 or 1))
         nextStep:SetText(strings.nextStep)
@@ -777,6 +786,7 @@ function studio.CreateWizard(parent, showLibrary)
         local complex = selectFirstAction(body)
         advanced = not starter and complex
         simulating = false
+        exportScope = "account"
         simulator.Reset()
         conversionIssue = options and options.conversionIssue
         category, message = "spell", conversionIssue and "convertFailed" or nil
