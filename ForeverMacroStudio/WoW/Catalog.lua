@@ -153,6 +153,17 @@ function Catalog.SpellName(id)
     return spell and spell.name
 end
 
+function Catalog.ActionIcon(action)
+    if not action or not action.id then return nil end
+    local icon
+    if action.kind == "spell" then
+        icon = read(C_Spell and C_Spell.GetSpellTexture, action.id)
+    elseif action.kind == "item" then
+        icon = read(C_Item and C_Item.GetItemIconByID, action.id)
+    end
+    if type(icon) == "number" or type(icon) == "string" then return icon end
+end
+
 function Catalog.KnownSpell(candidates)
     spells = spells or loadSpells()
     for _, id in ipairs(candidates) do
