@@ -263,9 +263,17 @@ local function createWindow()
             wizard.Close(function() self:Hide(); showLibrary() end)
         end
     end)
+    local userScale = 1
+    window:EnableMouseWheel(true)
+    window:SetScript("OnMouseWheel", function(self, delta)
+        if not IsControlKeyDown or not IsControlKeyDown() then return end
+        userScale = math.max(0.7, math.min(1.2, userScale + (delta > 0 and 0.05 or -0.05)))
+        local width, height = UIParent:GetWidth(), UIParent:GetHeight()
+        self:SetScale(math.min(userScale, (width - 24) / 760, (height - 24) / 530))
+    end)
     window:SetScript("OnShow", function(self)
         local width, height = UIParent:GetWidth(), UIParent:GetHeight()
-        self:SetScale(math.min(1, (width - 24) / 760, (height - 24) / 530))
+        self:SetScale(math.min(userScale, (width - 24) / 760, (height - 24) / 530))
         self:Refresh()
     end)
     if window.CloseButton then window.CloseButton:SetScript("OnClick", function() window:RequestClose() end) end
