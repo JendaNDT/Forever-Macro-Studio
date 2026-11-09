@@ -545,20 +545,23 @@ function studio.CreateWizard(parent, showLibrary)
         local draft = editor.Get()
         local preview, err = studio.MacroExport.Prepare(draft, exportScope, Catalog.SpellName)
         if not preview then
-            exportHint:SetText("Kontrola exportu: " .. tostring(err))
+            exportHint:SetText(studio.GetStrings().exportRejected:format(tostring(err)))
             return
         end
+        local strings = studio.GetStrings()
+        local selectedScope = exportScope
         StaticPopupDialogs["FMS_EXPORT_PREVIEW"] = {
-            text = ("Rozsah: %s\\nNazev: %s\\nText: %s\\nBajtu: %d\\nObsazeno: %d/%d\\nPouze nahled, nic se nezapise."):format(
-                exportScope, W.SafeText(preview.name), W.SafeText(preview.text),
+            text = strings.exportPreviewText:format(
+                selectedScope == "account" and strings.accountMacros or strings.characterMacros,
+                W.SafeText(preview.name), W.SafeText(preview.text),
                 preview.bytes, preview.count, preview.capacity),
-            button1 = "Znovu overit", button2 = "Zrusit",
+            button1 = strings.exportRecheck, button2 = strings.cancel,
             OnShow = studio.ApplyPopupTypeface, OnHide = studio.RestorePopupTypeface,
             OnAccept = function()
                 local current, reason = studio.MacroExport.ConfirmPreview(
-                    preview, editor and editor.Get(), exportScope, Catalog.SpellName)
-                exportHint:SetText(current and "Overeno. Zapis zustava vypnuty."
-                    or ("Kontrola exportu: " .. tostring(reason)))
+                    preview, editor and editor.Get(), selectedScope, Catalog.SpellName)
+                exportHint:SetText(current and strings.exportReady
+                    or strings.exportRejected:format(tostring(reason)))
             end,
             timeout = 0, whileDead = true, hideOnEscape = true,
         }
@@ -760,9 +763,9 @@ function studio.CreateWizard(parent, showLibrary)
                 saveButton:SetText(strings.saveDraft)
                 saveButton:SetEnabled(not studio.library.issue)
                 scopeToggle:SetText(exportScope == "account" and strings.accountMacros or strings.characterMacros)
-                exportPreview:SetText("Overit export do WoW")
+                exportPreview:SetText(strings.exportPreviewButton)
                 exportPreview:SetEnabled(preview.canCopy)
-                exportHint:SetText("Pouze nahled. Zapis do hry je zatim vypnuty.")
+                exportHint:SetText(strings.exportReadOnly)
             end
         end
     end
