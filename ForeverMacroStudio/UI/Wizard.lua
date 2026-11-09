@@ -354,7 +354,12 @@ function studio.CreateWizard(parent, showLibrary)
     local categories = {}
     local catalogFilterLabel = W.Label(steps[1], 266, 151, 145)
     local catalogFilter = W.Box(steps[1], 416, 144, 318, 24)
-    local catalogStatus = W.Label(steps[1], 266, 384, 466)
+    local selectionIcon = steps[1]:CreateTexture(nil, "ARTWORK")
+    selectionIcon:SetPoint("TOPLEFT", steps[1], "TOPLEFT", 266, -385)
+    selectionIcon:SetSize(38, 38)
+    selectionIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+    local selectionName = W.Label(steps[1], 314, 394, 415)
+    local catalogStatus = W.Label(steps[1], 266, 432, 466)
     local function choose(entry)
         local line, branch, _, count = current()
         if not line and count ~= 0 then return end
@@ -607,6 +612,15 @@ function studio.CreateWizard(parent, showLibrary)
             return entry.id == argument.id
         end)
         catalogStatus:SetText(state and strings[state] or #results == 0 and strings.catalogEmpty or "")
+        selectionIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+        selectionName:SetText(argument and W.SafeText(actionName(argument, strings) or strings.noAction) or strings.noAction)
+        if argument and argument.kind == "spell" and type(argument.id) == "number"
+            and C_Spell and type(C_Spell.GetSpellTexture) == "function" then
+            local ok, texture = pcall(C_Spell.GetSpellTexture, argument.id)
+            if ok and (type(texture) == "number" or type(texture) == "string") then
+                selectionIcon:SetTexture(texture)
+            end
+        end
     end
 
     local function renderPreview(strings, draft, preview)
@@ -784,6 +798,7 @@ function studio.CreateWizard(parent, showLibrary)
                 exportPreview:SetEnabled(preview.canCopy)
                 exportHint:SetText(strings.exportReadOnly)
                 actionCaption:SetText(W.SafeText(draft.title ~= "" and draft.title or strings.untitledDraft))
+                actionIcon:SetTexture(selectionIcon:GetTexture() or "Interface\\Icons\\INV_Misc_QuestionMark")
             end
         end
     end
