@@ -835,6 +835,7 @@ function studio.CreateWizard(parent, showLibrary)
     end
 
     function view.SetCompact(compact)
+        W.Reflow(frame, compact, "wizard")
         local desired = compact and 1 or 2
         if catalogColumns ~= desired then
             catalogColumns = desired
