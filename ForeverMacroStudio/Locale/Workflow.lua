@@ -2,6 +2,7 @@ local _, studio = ...
 
 local workflows = {
     enUS = {
+        favoriteAll = "All drafts", favoriteOnly = "Favorites only",
         exportErrors = {
             ["invalid-scope"] = "Choose account or character.",
             ["missing-api"] = "The game does not expose macro reading.",
@@ -57,6 +58,7 @@ local workflows = {
         },
     },
     csCZ = {
+        favoriteAll = "Všechny návrhy", favoriteOnly = "Jen oblíbené",
         exportErrors = {
             ["invalid-scope"] = "Vyber makra účtu nebo postavy.",
             ["missing-api"] = "Hra neumožňuje bezpečně načíst makra.",
