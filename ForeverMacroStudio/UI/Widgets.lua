@@ -114,6 +114,22 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
     local indicator = Widgets.Label(parent, x + 46, navY + 4, width - 92)
     indicator:SetJustifyH("CENTER")
 
+    function pager.SetColumns(value)
+        local columns = value == 1 and 1 or 2
+        local cardWidth = math.floor((width - (columns - 1) * 10) / columns)
+        for index, card in ipairs(rows) do
+            local col = (index - 1) % columns
+            local line = math.floor((index - 1) / columns)
+            card.button:ClearAllPoints()
+            card.button:SetPoint("TOPLEFT", parent, "TOPLEFT", x + col * (cardWidth + 10), -(y + line * (columns == 1 and 32 or 60)))
+            card.button:SetSize(cardWidth, columns == 1 and 28 or 54)
+            card.button:GetFontString():SetWidth(cardWidth - (columns == 1 and 42 or 56))
+            card.icon:SetSize(columns == 1 and 22 or 36, columns == 1 and 22 or 36)
+        end
+        pager.page = 1
+        refresh()
+    end
+
     function pager.Render(entries, label, selected)
         local pages = math.max(1, math.ceil(#entries / 6))
         pager.page = math.max(1, math.min(pager.page, pages))
