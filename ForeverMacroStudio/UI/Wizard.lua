@@ -836,6 +836,11 @@ function studio.CreateWizard(parent, showLibrary)
 
     function view.SetCompact(compact)
         W.Reflow(frame, compact, "wizard")
+        title:SetWidth(compact and 166 or 356)
+        undo:ClearAllPoints()
+        undo:SetPoint("TOPLEFT", frame, "TOPLEFT", compact and 352 or 544, -42)
+        redo:ClearAllPoints()
+        redo:SetPoint("TOPLEFT", frame, "TOPLEFT", compact and 450 or 644, -42)
         local desired = compact and 1 or 2
         if catalogColumns ~= desired then
             catalogColumns = desired
