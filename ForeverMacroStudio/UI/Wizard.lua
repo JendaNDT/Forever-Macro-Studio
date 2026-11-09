@@ -385,6 +385,7 @@ function studio.CreateWizard(parent, showLibrary)
     local catalogColumns = 2
     local catalogLayout = W.Button(steps[1], 266, 412, 205, function()
         catalogColumns = catalogColumns == 2 and 1 or 2
+        catalogLayout:SetText(catalogColumns == 1 and "1 sloupec" or "2 sloupce")
         catalogPager.SetColumns(catalogColumns)
     end)
     for index, kind in ipairs({ "spell", "item", "slot" }) do
@@ -820,7 +821,7 @@ function studio.CreateWizard(parent, showLibrary)
         conversionIssue = options and options.conversionIssue
         category, message = "spell", conversionIssue and "convertFailed" or nil
         catalogPager.page = 1
-        catalogLayout:SetText("2 / 1")
+        catalogLayout:SetText(catalogColumns == 1 and "1 sloupec" or "2 sloupce")
         W.SetText(catalogFilter, "")
         frame:Show()
         refresh()
@@ -831,6 +832,7 @@ function studio.CreateWizard(parent, showLibrary)
         local desired = compact and 1 or 2
         if catalogColumns ~= desired then
             catalogColumns = desired
+            catalogLayout:SetText(desired == 1 and "1 sloupec" or "2 sloupce")
             catalogPager.SetColumns(desired)
         end
     end
