@@ -56,6 +56,15 @@ function Export.Prepare(draft, scope, spellName)
         scope = scope, name = draft.title, text = compiled.text,
         bytes = #compiled.text, characters = compiled.characters,
         count = state.count, capacity = state.capacity,
+        -- Immutable-by-convention snapshot; compare every slot at confirmation.
+        slotSignature = (function()
+            local parts = {}
+            for _, item in ipairs(state.entries) do
+                parts[#parts + 1] = ("%d:%d:%s:%d:%s"):format(
+                    item.index, #item.name, item.name, #item.body, item.body)
+            end
+            return table.concat(parts, "|")
+        end)(),
         -- An opaque preview, NOT permission to mutate.
         readOnly = true,
     }
@@ -68,10 +77,12 @@ function Export.ConfirmPreview(preview, draft, scope, spellName)
     if not current then return nil, err end
     if preview.scope ~= current.scope or preview.name ~= current.name
         or preview.text ~= current.text or preview.count ~= current.count
-        or preview.capacity ~= current.capacity then return nil, "stale-preview" end
+        or preview.capacity ~= current.capacity
+        or preview.slotSignature ~= current.slotSignature then return nil, "stale-preview" end
     return {
         scope = current.scope, name = current.name, text = current.text,
         bytes = current.bytes, count = current.count, capacity = current.capacity,
+        slotSignature = current.slotSignature,
         readOnly = true, confirmed = true,
     }
 end
