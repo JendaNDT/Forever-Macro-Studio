@@ -90,3 +90,11 @@ Při každé další práci aktualizovat:
 - **Testy nebyly spuštěny:** v dostupném prostředí není interpret Lua 5.1. Výsledek PASS se netvrdí.
 - **Zápis do herních maker není aktivní**; čeká na herní ověření E00/E05, zejména limity, boj a bezpečné řešení kolizí.
 - Před vydáním je nutná revize zobrazení dialogu a českých řetězců v cílovém klientu, provedení všech automatických testů a herní zkoušky.
+
+
+## Pracovní dávka E05–E07 – 2026-11-09
+- **E06 (implementováno, neověřeno ve hře):** náhled exportu má české i anglické texty, volbu rozsahu a opakovanou kontrolu. Kontrola nyní porovnává i názvy a texty existujících maker, nejen jejich počet. Zápis do hry stále neexistuje.
+- **Automatické testování (nastaveno, výsledek zatím neověřen):** `.github/workflows/ci.yml` na GitHubu instaluje Lua 5.1, spustí všechny `tests/*.lua`, zkontroluje syntaxi modulů a při úspěchu vytvoří ZIP jako artifact.
+- **E05 (částečně):** provedena cílená bezpečnostní revize exportního náhledu a přidán regresní test změny obsahu slotu. Kompletní stabilizace aplikace a testy ve hře zůstávají otevřené.
+- **E07 (připraveno, ne finálně vydáno):** instalační postup a záloha dat v README, `CHANGELOG.md` a `docs/KONTROLNI_SEZNAM_VYDANI.md`. ZIP vzniká až při úspěšném běhu workflow; nejde o publikovaný Release.
+- **Neuzavřené podmínky:** zjistit skutečný výsledek GitHub Actions a opravit případné chyby; projít herní testy a E00; teprve poté uvažovat o ostrém vydání.
