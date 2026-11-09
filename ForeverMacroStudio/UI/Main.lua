@@ -285,19 +285,54 @@ local function createWindow()
             wizard.Close(function() self:Hide(); showLibrary() end)
         end
     end)
+    -- Responsive viewport fit: preserves readable controls and their positions.
+    -- The resize grip adjusts the full UI scale rather than stretching fixed anchors.
     local userScale = 1
+    local function applyScale(self)
+        local width, height = UIParent:GetWidth(), UIParent:GetHeight()
+        local fit = math.min((width - 24) / 760, (height - 24) / 530)
+        self:SetScale(math.max(0.45, math.min(userScale, fit)))
+    end
+    window:SetMovable(true)
+    window:EnableMouse(true)
+    window:RegisterForDrag("LeftButton")
+    window:SetScript("OnDragStart", function(self)
+        if not InCombatLockdown or not InCombatLockdown() then self:StartMoving() end
+    end)
+    window:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+    local grip = CreateFrame("Button", nil, window)
+    grip:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -5, 5)
+    grip:SetSize(22, 22)
+    grip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+    grip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+    grip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+    grip:RegisterForDrag("LeftButton")
+    local dragging, originX, originScale
+    grip:SetScript("OnDragStart", function()
+        if InCombatLockdown and InCombatLockdown() then return end
+        dragging = true
+        originX = GetCursorPosition()
+        originScale = userScale
+    end)
+    grip:SetScript("OnDragStop", function() dragging = false end)
+    grip:SetScript("OnUpdate", function()
+        if not dragging then return end
+        local cursor = GetCursorPosition()
+        local uiScale = UIParent:GetEffectiveScale()
+        userScale = math.max(0.65, math.min(1.5, originScale + (cursor - originX) / (760 * uiScale)))
+        applyScale(window)
+    end)
     window:EnableMouseWheel(true)
     window:SetScript("OnMouseWheel", function(self, delta)
         if not IsControlKeyDown or not IsControlKeyDown() then return end
-        userScale = math.max(0.7, math.min(1.2, userScale + (delta > 0 and 0.05 or -0.05)))
-        local width, height = UIParent:GetWidth(), UIParent:GetHeight()
-        self:SetScale(math.min(userScale, (width - 24) / 760, (height - 24) / 530))
+        userScale = math.max(0.65, math.min(1.5, userScale + (delta > 0 and 0.05 or -0.05)))
+        applyScale(self)
     end)
-    window:SetScript("OnShow", function(self)
-        local width, height = UIParent:GetWidth(), UIParent:GetHeight()
-        self:SetScale(math.min(userScale, (width - 24) / 760, (height - 24) / 530))
-        self:Refresh()
-    end)
+    window:SetScript("OnShow", function(self) applyScale(self); self:Refresh() end)
+    local viewport = CreateFrame("Frame", nil, UIParent)
+    viewport:RegisterEvent("UI_SCALE_CHANGED")
+    viewport:RegisterEvent("DISPLAY_SIZE_CHANGED")
+    viewport:SetScript("OnEvent", function() if window:IsShown() then applyScale(window) end end)
     if window.CloseButton then window.CloseButton:SetScript("OnClick", function() window:RequestClose() end) end
     tinsert(UISpecialFrames, window:GetName())
     return window
