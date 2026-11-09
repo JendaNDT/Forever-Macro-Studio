@@ -73,3 +73,11 @@ Při každé další práci aktualizovat:
 - **Aktuální priorita:** E00 zbývající herní zkoušky + E05 stabilizace existujících funkcí.
 - **Poslední ověření:** 2026-11-09, statická inventura repozitáře a dokumentace, bez spuštění testů.
 - **Další konkrétní krok:** automatické testy a kontrolní seznam herních scénářů.
+
+
+## E06 průběžný záznam – 2026-11-09
+- Přidán `ForeverMacroStudio/WoW/MacroExport.lua` a načten v `.toc`. Funkce `MacroExport.Prepare` provádí **pouze kontrolu a náhled**, nikoli zápis do hry.
+- Kontroluje ověřený profil klienta, přítomnost a délku textu, název, stav boje, kapacitu a kolizi názvu v cílovém rozsahu. Vrací náhled označený `readOnly`.
+- Přidán `tests/export.lua` s modelovými scénáři. **Test zatím nebyl spuštěn; PASS nelze tvrdit.**
+- Zatím není připojeno uživatelské tlačítko, potvrzovací dialog ani bezpečná zapisovací vrstva. Nic se samo neukládá ani nepřepisuje.
+- **Další práce:** spustit Lua 5.1 testy, ověřit limity názvu a textu na reálném Forever klientu, navrhnout dvoufázové potvrzení s opětovným načtením stavu a kontrolou kolizí těsně před zápisem. Teprve po dokončení E00/E05 povolit zápis.
