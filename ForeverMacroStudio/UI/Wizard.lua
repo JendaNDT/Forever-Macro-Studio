@@ -544,7 +544,7 @@ function studio.CreateWizard(parent, showLibrary)
     end)
 
 
-    -- E06: read-only confirmation. No CreateMacro/EditMacro calls.
+    local actionIcon = steps[5]:CreateTexture(nil, "ARTWORK"),    actionIcon:SetPoint("TOPLEFT", steps[5], "TOPLEFT", 266, -360),    actionIcon:SetSize(38, 38),    actionIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark"),    local actionCaption = W.Label(steps[5], 314, 368, 405),    -- E06: read-only confirmation. No CreateMacro/EditMacro calls.
     local exportScope = "account"
     local exportHint = W.Label(steps[5], 266, 315, 465)
     local scopeToggle = W.Button(steps[5], 266, 282, 205, function()
@@ -783,6 +783,7 @@ function studio.CreateWizard(parent, showLibrary)
                 exportPreview:SetText(strings.exportPreviewButton)
                 exportPreview:SetEnabled(preview.canCopy)
                 exportHint:SetText(strings.exportReadOnly)
+                actionCaption:SetText(W.SafeText(draft.title ~= "" and draft.title or strings.untitledDraft))
             end
         end
     end
