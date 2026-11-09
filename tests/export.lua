@@ -33,6 +33,10 @@ account[2] = { "Another", 1, "x" }
 local staleCount, countError = Export.ConfirmPreview(result, draft, "account")
 assert(staleCount == nil and countError == "stale-preview")
 account[2] = nil
+account[1][3] = "/cast Changed"
+local staleBody, bodyError = Export.ConfirmPreview(result, draft, "account")
+assert(staleBody == nil and bodyError == "stale-preview")
+account[1][3] = "/cast Existing"
 reject("invalid-scope", draft, "other")
 reject("name-conflict", { title = "existing", body = draft.body })
 reject("invalid-body", { title = "New", body = { text = "/cast Test", valid = false } })
