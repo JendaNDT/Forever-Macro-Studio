@@ -2,6 +2,12 @@ local _, studio = ...
 
 local workflows = {
     enUS = {
+        exportPreviewButton = "Check export to WoW",
+        exportReadOnly = "Preview only. Writing to the game is disabled.",
+        exportPreviewText = "Destination: %s\\nName: %s\\nMacro text: %s\\nBytes: %d\\nSlots used: %d/%d\\n\\nNo macro will be created or changed.",
+        exportRecheck = "Recheck",
+        exportReady = "Checks passed. Writing remains disabled.",
+        exportRejected = "Export unavailable: %s",
         importMacros = "Load from WoW", backToDrafts = "Back to drafts", importHeading = "Macros in WoW",
         accountMacros = "Account macros", characterMacros = "Character macros", importCount = "WoW macros: %d",
         importHint = "Choose a macro to open as a new draft.",
@@ -32,6 +38,12 @@ local workflows = {
         },
     },
     csCZ = {
+        exportPreviewButton = "Zkontrolovat export do WoW",
+        exportReadOnly = "Pouze náhled. Zápis do hry je zatím vypnutý.",
+        exportPreviewText = "Cíl: %s\\nNázev: %s\\nText makra: %s\\nBajtů: %d\\nObsazeno: %d/%d\\n\\nŽádné makro se nevytvoří ani nezmění.",
+        exportRecheck = "Znovu ověřit",
+        exportReady = "Kontroly prošly. Zápis zůstává vypnutý.",
+        exportRejected = "Export není dostupný: %s",
         importMacros = "Načíst z WoW", backToDrafts = "Zpět k návrhům", importHeading = "Makra ve WoW",
         accountMacros = "Makra účtu", characterMacros = "Makra postavy", importCount = "Maker ve WoW: %d",
         importHint = "Vyber makro, které chceš otevřít jako nový návrh.",
