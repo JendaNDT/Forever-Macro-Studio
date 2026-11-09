@@ -91,9 +91,25 @@ local function createWindow()
     draftRows:SetAllPoints(libraryPanel)
     local importRows = CreateFrame("Frame", nil, libraryPanel)
     importRows:SetAllPoints(libraryPanel)
+    local favorites = studio.preferences.favorites
+    if type(favorites) ~= "table" then
+        favorites = {}
+        if not studio.library.issue then studio.preferences.favorites = favorites end
+    end
+    local favoritesOnly = false
     local pager = W.Pager(draftRows, 24, 137, 420, 8, function() render() end, function(draft) start(draft) end, {
         {
-            width = 109,
+            width = 36,
+            label = function(draft) return favorites[draft.id] and "*" or "+" end,
+            choose = function(draft)
+                if studio.library.issue or not draft.id then return end
+                favorites[draft.id] = not favorites[draft.id] or nil
+                render()
+            end,
+        },
+
+        {
+            width = 84,
             label = function() return studio.GetStrings().editCopy end,
             choose = function(draft)
                 if studio.library.issue then return end
@@ -105,7 +121,7 @@ local function createWindow()
             end,
         },
         {
-            width = 91,
+            width = 78,
             label = function(draft)
                 local strings = studio.GetStrings()
                 return draft.archived and strings.restoreDraft or strings.archiveDraft
@@ -130,6 +146,10 @@ local function createWindow()
             body = converted or rawBody,
             character = scope == "character" and studio.GetCharacterName() or nil,
         }, false, nil, { preview = true, conversionIssue = issue })
+    end)
+    local favoriteToggle = W.Button(draftRows, 24, 462, 180, function()
+        favoritesOnly, pager.page = not favoritesOnly, 1
+        render()
     end)
     local archiveToggle = W.Button(draftRows, 306, 435, 138, function()
         archived, archiveMessage, pager.page = not archived, nil, 1
@@ -198,7 +218,8 @@ local function createWindow()
             for _, draft in ipairs(studio.library.List()) do
                 local name = draft.character or ""
                 names[name] = true
-                if (draft.archived == true) == archived and (not characterFilter or characterFilter == name) then
+                if (draft.archived == true) == archived and (not characterFilter or characterFilter == name)
+                    and (not favoritesOnly or favorites[draft.id]) then
                     local searchable = W.Lower(draft.title .. " " .. table.concat(draft.tags, " "))
                     if searchable:find(query, 1, true) then entries[#entries + 1] = draft end
                 end
@@ -216,6 +237,7 @@ local function createWindow()
             if characterFilter then characterToggle:LockHighlight() else characterToggle:UnlockHighlight() end
             archiveToggle:SetText(archived and strings.activeDrafts or strings.archivedDrafts)
             if archived then archiveToggle:LockHighlight() else archiveToggle:UnlockHighlight() end
+            favoriteToggle:SetText(favoritesOnly and strings.favoriteAll or strings.favoriteOnly)
             count:SetText(strings.storedDrafts:format(studio.library.Count()) .. "  (" .. #entries .. ")")
             hint:SetText(archiveMessage and strings[archiveMessage] or #entries > 0 and strings.openDraft
                 or (query ~= "" or characterFilter) and strings.noSearchResults
