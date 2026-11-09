@@ -292,6 +292,7 @@ local function createWindow()
         local width, height = UIParent:GetWidth(), UIParent:GetHeight()
         local fit = math.min((width - 24) / 760, (height - 24) / 530)
         self:SetScale(math.max(0.45, math.min(userScale, fit)))
+        wizard.SetCompact(fit < 0.85)
     end
     window:SetMovable(true)
     window:EnableMouse(true)
