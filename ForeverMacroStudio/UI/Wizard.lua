@@ -827,6 +827,13 @@ function studio.CreateWizard(parent, showLibrary)
         if raw and not draft then textBox:SetFocus() end
     end
 
+    function view.SetCompact(compact)
+        local desired = compact and 1 or 2
+        if catalogColumns ~= desired then
+            catalogColumns = desired
+            catalogPager.SetColumns(desired)
+        end
+    end
     function view.IsOpen() return editor ~= nil end
     function view.Refresh() refresh() end
     return view
