@@ -45,3 +45,11 @@ Stav k 2026-11-09. Rozlišujeme implementaci, automatické testy a test ve hře.
 - UI06: okno lze přesouvat a měnit jeho měřítko tažením pravého dolního rohu; reaguje také na změnu rozlišení a UI měřítka. Vnitřní rozložení používá pevné souřadnice a adaptivní měřítko, nikoli přeskupení sloupců.
 - Bez klienta WoW nelze potvrdit funkčnost vykreslení ani kompatibilitu s konkrétní verzí Forever.
 - Před vydáním ověřit Lua 5.1 syntax, GitHub Actions a ve hře klikání na karty, stránkování, změnu měřítka a drag.
+
+## Responzivní režim – implementace 2026-11-09
+- Široké zobrazení 760 × 530; kompaktní 550 × 970, přepnutí podle dostupné plochy (šířka pod 1000 nebo výška pod 730).
+- Sdílené W.Reflow přeskupuje přímo ukotvené ovládací prvky knihovny a průvodce do svislého uspořádání; zachovává původní souřadnice pro návrat do širokého režimu.
+- Katalog má dvousloupcové grafické karty a při kompaktním zobrazení se přepíná na jeden sloupec.
+- Záhlaví průvodce přizpůsobuje pole názvu a tlačítka Zpět/Vpřed pro historii úprav.
+- Ověření ve hře: přepnutí rozlišení, změna měřítka UI, otevření knihovny, editoru, kroků 1–5, stránkování katalogu, import, export a zavření okna.
+- GitHub Actions při push do main spouští Lua 5.1 testy, kontrolu syntaxe a vytvoření instalačního ZIP; výsledek tohoto běhu zatím nebyl ověřen.
