@@ -3,6 +3,7 @@ local _, studio = ...
 local workflows = {
     enUS = {
         favoriteAll = "All drafts", favoriteOnly = "Favorites only",
+        catalogColumns = { "1 column", "2 columns" },
         exportErrors = {
             ["invalid-scope"] = "Choose account or character.",
             ["missing-api"] = "The game does not expose macro reading.",
@@ -24,7 +25,7 @@ local workflows = {
         },
         exportPreviewButton = "Check export to WoW",
         exportReadOnly = "Preview only. Writing to the game is disabled.",
-        exportPreviewText = "Destination: %s\nName: %s\nMacro text: %s\nBytes: %d\nSlots used: %d/%d\n\nNo macro will be created or changed.",
+        exportPreviewText = "Destination: %s\nName: %s\nMacro text:\n%s\nBytes: %d\nSlots used: %d/%d\n\nNo macro will be created or changed.",
         exportRecheck = "Recheck",
         exportReady = "Checks passed. Writing remains disabled.",
         exportRejected = "Export unavailable: %s",
@@ -59,6 +60,7 @@ local workflows = {
     },
     csCZ = {
         favoriteAll = "Všechny návrhy", favoriteOnly = "Jen oblíbené",
+        catalogColumns = { "1 sloupec", "2 sloupce" },
         exportErrors = {
             ["invalid-scope"] = "Vyber makra účtu nebo postavy.",
             ["missing-api"] = "Hra neumožňuje bezpečně načíst makra.",
@@ -80,7 +82,7 @@ local workflows = {
         },
         exportPreviewButton = "Zkontrolovat export do WoW",
         exportReadOnly = "Pouze náhled. Zápis do hry je zatím vypnutý.",
-        exportPreviewText = "Cíl: %s\nNázev: %s\nText makra: %s\nBajtů: %d\nObsazeno: %d/%d\n\nŽádné makro se nevytvoří ani nezmění.",
+        exportPreviewText = "Cíl: %s\nNázev: %s\nText makra:\n%s\nBajtů: %d\nObsazeno: %d/%d\n\nŽádné makro se nevytvoří ani nezmění.",
         exportRecheck = "Znovu ověřit",
         exportReady = "Kontroly prošly. Zápis zůstává vypnutý.",
         exportRejected = "Export není dostupný: %s",
