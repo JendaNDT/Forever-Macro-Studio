@@ -121,7 +121,7 @@ function Widgets.CatalogCards(parent, x, y, width, refresh, choose)
             local col = (index - 1) % columns
             local line = math.floor((index - 1) / columns)
             card.button:ClearAllPoints()
-            card.button:SetPoint("TOPLEFT", parent, "TOPLEFT", x + col * (cardWidth + 10), -(y + line * (columns == 1 and 32 or 60)))
+            card.button:SetPoint("TOPLEFT", parent, "TOPLEFT", x + col * (cardWidth + 10), -(y + line * (columns == 1 and 30 or 60)))
             card.button:SetSize(cardWidth, columns == 1 and 28 or 54)
             card.button:GetFontString():SetWidth(cardWidth - (columns == 1 and 42 or 56))
             card.icon:SetSize(columns == 1 and 22 or 36, columns == 1 and 22 or 36)
