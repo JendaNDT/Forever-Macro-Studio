@@ -249,6 +249,10 @@ function studio.CreateWizard(parent, showLibrary)
         stepButtons[index] = button
     end
 
+    local miniTitle = W.Label(frame, 24, 393, 215)
+    local miniText = W.Label(frame, 24, 410, 215)
+    miniText:SetMaxLines(1)
+    miniText:SetWordWrap(false)
     local guidePanel = CreateFrame("Frame", nil, frame)
     guidePanel:SetAllPoints(frame)
     local guideTitle = W.Label(guidePanel, 24, 253, 215, true)
@@ -692,6 +696,10 @@ function studio.CreateWizard(parent, showLibrary)
         redo:SetEnabled(editor.CanRedo())
         stepTitle:SetText(strings.stepTitle:format(step, guide.steps[step]))
         progress:SetValue(step)
+        local compact = Compiler.Compile(draft.body, Catalog.SpellName)
+        miniTitle:SetText(strings.generatedMacro)
+        local firstLine = type(compact.text) == "string" and compact.text:match("[^\r\n]+") or ""
+        miniText:SetText(W.SafeText(firstLine or ""))
         back:SetText(strings.back)
         back:SetEnabled(step > (raw and 4 or 1))
         nextStep:SetText(strings.nextStep)
