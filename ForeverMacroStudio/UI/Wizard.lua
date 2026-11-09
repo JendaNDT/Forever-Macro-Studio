@@ -382,6 +382,11 @@ function studio.CreateWizard(parent, showLibrary)
         end)
     end
     local catalogPager = W.CatalogCards(steps[1], 266, 175, 470, function() refresh() end, choose)
+    local catalogColumns = 2
+    local catalogLayout = W.Button(steps[1], 266, 412, 205, function()
+        catalogColumns = catalogColumns == 2 and 1 or 2
+        catalogPager.SetColumns(catalogColumns)
+    end)
     for index, kind in ipairs({ "spell", "item", "slot" }) do
         categories[kind] = W.Button(steps[1], 266 + (index - 1) * 159, 114, 150, function()
             category, catalogPager.page = kind, 1
@@ -815,6 +820,7 @@ function studio.CreateWizard(parent, showLibrary)
         conversionIssue = options and options.conversionIssue
         category, message = "spell", conversionIssue and "convertFailed" or nil
         catalogPager.page = 1
+        catalogLayout:SetText("2 / 1")
         W.SetText(catalogFilter, "")
         frame:Show()
         refresh()
