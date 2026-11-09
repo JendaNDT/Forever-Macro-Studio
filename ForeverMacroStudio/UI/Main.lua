@@ -290,9 +290,13 @@ local function createWindow()
     local userScale = 1
     local function applyScale(self)
         local width, height = UIParent:GetWidth(), UIParent:GetHeight()
-        local fit = math.min((width - 24) / 760, (height - 24) / 530)
-        self:SetScale(math.max(0.45, math.min(userScale, fit)))
-        wizard.SetCompact(fit < 0.85)
+        local compact = width < 1000 or height < 730
+        local baseWidth, baseHeight = compact and 550 or 760, compact and 970 or 530
+        self:SetSize(baseWidth, baseHeight)
+        W.Reflow(libraryPanel, compact, "library")
+        wizard.SetCompact(compact)
+        local fit = math.min((width - 24) / baseWidth, (height - 24) / baseHeight)
+        self:SetScale(math.max(0.35, math.min(userScale, fit)))
     end
     window:SetMovable(true)
     window:EnableMouse(true)
