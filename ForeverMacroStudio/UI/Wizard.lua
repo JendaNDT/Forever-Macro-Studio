@@ -381,7 +381,7 @@ function studio.CreateWizard(parent, showLibrary)
             Editor.SelectAction(active, chosen, entry)
         end)
     end
-    local catalogPager = W.Pager(steps[1], 266, 175, 470, 6, function() refresh() end, choose)
+    local catalogPager = W.CatalogCards(steps[1], 266, 175, 470, function() refresh() end, choose)
     for index, kind in ipairs({ "spell", "item", "slot" }) do
         categories[kind] = W.Button(steps[1], 266 + (index - 1) * 159, 114, 150, function()
             category, catalogPager.page = kind, 1
