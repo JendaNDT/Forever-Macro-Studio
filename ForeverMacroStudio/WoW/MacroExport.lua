@@ -40,8 +40,10 @@ function Export.Prepare(draft, scope, spellName)
     if not draft or type(draft) ~= "table" or type(draft.title) ~= "string" then return nil, "invalid-draft" end
     if not safe(draft.title) or draft.title == "" or #draft.title > 16
         or draft.title:find("[%c]") then return nil, "invalid-name" end
-    local compiled = studio.Compiler.Compile(draft.body, spellName)
-    if not compiled.canCopy or not compiled.text or #compiled.text > 255 then return nil, "invalid-body" end
+    local compileOK, compiled = pcall(studio.Compiler.Compile, draft.body, spellName)
+    if not compileOK or type(compiled) ~= "table" or compiled.canCopy ~= true
+        or type(compiled.text) ~= "string" or #compiled.text > 255
+        or not safe(compiled.text) then return nil, "invalid-body" end
     local combatOK, inCombat = pcall(InCombatLockdown or function() return nil end)
     if not combatOK or not safe(inCombat) or inCombat ~= false then return nil, "combat-unknown-or-active" end
     local state, err = snapshot(scope)
@@ -56,6 +58,21 @@ function Export.Prepare(draft, scope, spellName)
         count = state.count, capacity = state.capacity,
         -- An opaque preview, NOT permission to mutate.
         readOnly = true,
+    }
+end
+
+-- Second step rechecks all inputs and the live slot snapshot. Still read-only.
+function Export.ConfirmPreview(preview, draft, scope, spellName)
+    if type(preview) ~= "table" or preview.readOnly ~= true then return nil, "invalid-preview" end
+    local current, err = Export.Prepare(draft, scope, spellName)
+    if not current then return nil, err end
+    if preview.scope ~= current.scope or preview.name ~= current.name
+        or preview.text ~= current.text or preview.count ~= current.count
+        or preview.capacity ~= current.capacity then return nil, "stale-preview" end
+    return {
+        scope = current.scope, name = current.name, text = current.text,
+        bytes = current.bytes, count = current.count, capacity = current.capacity,
+        readOnly = true, confirmed = true,
     }
 end
 
